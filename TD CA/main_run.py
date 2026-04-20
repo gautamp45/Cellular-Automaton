@@ -3,14 +3,22 @@ import time
 import numpy as np
 from CA import TwoDimensionalCA
 from game_board import GameBoard
+from grapher import visualize_evolution
 
 pygame.init()
 
-ca = TwoDimensionalCA(100,70,['3'],['2','3'])
-#B345/S0456
-#0123478/S01234678
-#B0123478/S34678
-#B1/S134567
+birth_rule = '08'
+survival_rule = '4'
+
+birth_rule = [digit for digit in birth_rule]
+survival_rule = [digit for digit in survival_rule]
+
+ca = TwoDimensionalCA(100,70,birth_rule,survival_rule)
+
+#B0123478/S01234678	AntiLife
+#B01356/S012345	Wickstretcher And The Parasites
+
+
 
 gb = GameBoard(ca)
 
