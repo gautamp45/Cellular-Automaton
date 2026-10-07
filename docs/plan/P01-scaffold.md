@@ -32,7 +32,7 @@
    [tool.ruff]
    line-length = 100
    target-version = "py310"
-   extend-exclude = ["experiments", "web",
+   extend-exclude = ["experiments", "web", "docs/plan/reference",
      # legacy, removed phase by phase:
      "OD_CA.py", "GameofLife.py", "TD CA", "TD_Rule_Web Scraper.py", "neural-cellular-automata"]
 
@@ -118,6 +118,8 @@
    P07 adds an "export is up to date" step.
 
 Note: some sandboxes block `download.pytorch.org`. Torch tests must `pytest.importorskip("torch")`, so they skip locally and run in CI.
+
+7. Keep `CLAUDE.md` and `.claude/` (SessionStart hook) as they are. Once `pyproject.toml` exists, the hook starts installing `cellauto[dev]` automatically in cloud sessions. Validate it with `CLAUDE_CODE_REMOTE=true .claude/hooks/session-start.sh`.
 
 ## Done when
 `pip install -e ".[dev]"`, then `ruff check . && ruff format --check . && mypy src && pytest -q` passes.

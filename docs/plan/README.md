@@ -1,5 +1,7 @@
 # Cellular-Automaton: Revamp Plan (v2)
 
+> **Fresh session?** Read [`HANDOFF.md`](HANDOFF.md) (branches, environment, pitfalls, kickoff prompts) and [`STATUS.md`](STATUS.md) (progress) first. The root `CLAUDE.md` holds the per-session rules. [`reference/`](reference/README.md) holds the scripts behind every verified number.
+
 This directory is the complete, executable plan to turn this repo into a polished **research-grade library + static data backend** for a frontend that showcases elementary (1D), life-like (2D), continuous (Lenia), and neural cellular automata.
 
 It is written for an AI coding agent (or a human) to execute **one phase file at a time**, without further design work. Every number quoted as "verified" was produced by running reference code during planning (Oct 2026). If a test built on a verified value fails, **the implementation is wrong, not the value.**

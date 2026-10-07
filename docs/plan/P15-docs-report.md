@@ -30,7 +30,10 @@ Figures come from `scripts/make_figures.py`, which reads `results/*.json` and wr
 - `CITATION.cff` and `LICENSE` (MIT, D5).
 - Fill `content/*.md` (the frontend's prose) from the REPORT sections: 150–400 words each, no maths heavier than the frontend can render (state whether KaTeX is assumed; recommend yes).
 
-## 4. Final checks
+## 4. Handoff docs
+Refresh `CLAUDE.md` (it describes the mid-refactor state; rewrite it for the finished layout), `docs/plan/STATUS.md`, and `docs/plan/HANDOFF.md` (environment facts, kickoff prompts) so the frontend session starts clean.
+
+## 5. Final checks
 - `cellauto export-web --check` is clean; CI is green.
 - Every row of the plan README §5 matrix has its file, spec and fixture.
 - Fresh clone → `pip install -e ".[dev]"` → `pytest` passes in < 2 min (slow tests excluded).
