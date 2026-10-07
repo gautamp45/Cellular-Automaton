@@ -30,7 +30,7 @@
 | D4 | Google's Distill Colab notebook | **Delete, link it in README.** It is unmodified third-party TensorFlow code that doesn't run outside Colab. | Keep under `docs/reference/` |
 | D5 | License | **MIT** (check with collaborator *Manan Shah*, who authored the crypto commit) | Apache-2.0 |
 | D6 | NCA GIFs (~15 MB) | **Keep**, move to `assets/nca/animations/`. They're the ablation results. | Keep a curated subset |
-| D7 | Frontend execution model | **All simulation runs client-side** (§10). Python is not a runtime server. | FastAPI backend (not recommended, see §13) |
+| D7 | Frontend execution model | **All simulation runs client-side** (§13). Python is not a runtime server. | FastAPI backend (not recommended, see §13) |
 
 ---
 
@@ -745,7 +745,7 @@ Then run `cellauto export-web` and commit `web/public/data/`.
    - Architecture (link `docs/ARCHITECTURE.md`) and data contract (link `docs/DATA_CONTRACT.md`).
    - **Credits:** Mordvintsev et al., *Growing Neural Cellular Automata*, Distill 2020 (link the original Colab instead of vendoring it, D4); MedMNIST (Yang et al.) as the source of the 3 target images; Wolfram, *A New Kind of Science*; LifeWiki for rules and patterns. **If any of `neural-cellular-automata/src` was adapted from another public repository, credit that repository explicitly**; hiring reviewers check this.
 2. **`docs/ARCHITECTURE.md`:** the §2.1 principles, a module diagram, the "Python is reference + exporter, browser is runtime" rationale, and the parity-fixture strategy.
-3. **`docs/ROADMAP.md`:** Phase 9 items below, plus a "Frontend" pointer to §12.
+3. **`docs/ROADMAP.md`:** Phase 9 items below, plus a "Frontend" pointer to §13.
 4. **`LICENSE`:** MIT (D5) with the copyright holder(s).
 
 **Commit:** `docs: README, architecture, data contract, roadmap, license`
