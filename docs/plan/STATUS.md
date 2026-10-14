@@ -8,7 +8,7 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 |---|---|---|---|---|---|
 | P00 | Hygiene, archive crypto, remove Rule Predictor | Must | ✅ | see log | Also removed the monorepo `packages/` + `tests/` from `main` (owner decision, see log) |
 | P01 | Scaffold, tooling, CI | Must | ✅ | see log | ruff `extend-exclude` uses `docs/plan` (not just `/reference`): ruff's formatter also formats the code blocks in the plan's `.md` files |
-| P02 | Elementary engine | Must | ⬜ | | |
+| P02 | Elementary engine | Must | ✅ | see log | `OD_CA.py` removed |
 | P03 | Life-like engine, RLE, catalogs | Must | ⬜ | | |
 | P04 | Lenia | Should | ⬜ | | Needs a one-time download of `animals.json` (GitHub raw) |
 | P05 | NCA torch-free inference + manifest | Must | ⬜ | | |
@@ -36,6 +36,8 @@ If the owner hasn't answered, proceed with the defaults and note it in the sessi
 ## Session log (newest first)
 
 Add one entry per session: date, branch, phases touched, what's left mid-phase, surprises.
+
+- **P02 done** (same session). `src/cellauto/engines/elementary.py` + `tests/engines/test_elementary.py` (18 tests incl. A051023 rule-30 column, Gould's sequence, B3 edge regression, GF(2) nilpotency trap, hypothesis reference/mirror properties). All verified vectors passed unchanged. `OD_CA.py` `git rm`'d and dropped from ruff `extend-exclude`; `CLAUDE.md` legacy list updated. Test-only note: variable `l` renamed `lt` (ruff E741). **Next: P03.**
 
 - **2026-10-14 (cont.), `claude/keen-turing-np4r23`:** **P01 done** (`pyproject.toml`, `src/cellauto/{__init__,__main__,cli,_types,_validate}.py`, `py.typed`, `tests/test_smoke.py`, `.github/workflows/ci.yml`). Deviation from the phase file: ruff `extend-exclude` has `docs/plan` instead of `docs/plan/reference`, because the installed ruff also lints/formats fenced code in `docs/plan/*.md`. Checks: ruff, ruff format, mypy, pytest all pass; SessionStart hook validated (`CLAUDE_CODE_REMOTE=true .claude/hooks/session-start.sh`). **Next: P02.** (The owner asked that docs be updated at every step: each phase commit includes its STATUS row + log entry, and `CLAUDE.md` / `docs/` where the repo's shape changed.)
 
