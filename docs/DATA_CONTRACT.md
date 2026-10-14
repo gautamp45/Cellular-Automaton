@@ -31,13 +31,14 @@ size (`DatasetRef`); use it for discovery and cache-busting.
 | `lifelike_rules` | `lifelike/rules.json` | `lifelike_rules` | named B/S rules: rulestring, 18-bit code, `(2, 9)` table, `dual`, `self_dual`, `lambda`, and (once the atlas has been run) a `mean_field` block |
 | `lifelike_atlas_header` / `lifelike_atlas_bin` | `lifelike/atlas.header.json`, `lifelike/atlas.bin` | `binary_table_header` | the rule-space atlas: all 131,072 B0-free rules × 11 columns in the cabin format below; **row `i` is the rule with code `2·i`** |
 | `lifelike_atlas_meta` | `lifelike/atlas_summary.json` | `lifelike_atlas_meta` | atlas protocol, PCA components, cluster summaries, the 20-bin edge-of-chaos table, Spearman correlations, and the catalog rules' row indices |
+| `relu_examples` | `inference/relu_examples.json` | `relu_examples` | every catalog rule compiled to an exact ReLU network, plus the histogram of hidden units over all 2^18 rules |
 | `lifelike_patterns` | `lifelike/patterns.json` | `lifelike_patterns` | named patterns: RLE, size, live cells |
 | `lenia_presets` | `lenia/presets.json` | `lenia_presets` | Lenia presets (Orbium family, Life as a Lenia) |
 | `nca_models` | `nca/models.json` | `nca_models` | the 25 trained NCA checkpoints and their configuration |
 | `nca_weights/<id>` | `nca/weights/<id>.json` | `nca_weights` | scaled kernels + float32 weights (base64) |
 | `nca_target/<t>` | `nca/targets/<t>.png` | – | 28×28 RGBA target image |
 | `nca_animation/<id>` | `nca/animations/<id>.gif` | – | growth animation |
-| `fixture/<name>` | `fixtures/{elementary,elementary_math,lifelike,lifelike_math,rle,lenia,nca}.json` | `fixture` | golden inputs/outputs (see [ALGORITHMS.md](ALGORITHMS.md)) |
+| `fixture/<name>` | `fixtures/{elementary,elementary_math,lifelike,lifelike_math,rle,lenia,nca,inference}.json` | `fixture` | golden inputs/outputs (see [ALGORITHMS.md](ALGORITHMS.md)) |
 | `content_index` | `content/index.json` | `content_index` | explainer pages in display order |
 | `content/<slug>` | `content/<slug>.md` | – | Markdown with a `key: value` front-matter block (`title`, `page`, `order`) |
 | `schema/<name>` | `schema/<name>.schema.json` | – | generated JSON Schemas |

@@ -393,3 +393,31 @@ class LifelikeAtlasMeta(_Model):
     edge_of_chaos: list[LifeAtlasBin]
     correlations: list[LifeAtlasCorrelation]
     catalog: list[LifeAtlasCatalogRow]
+
+
+# --- rule inference (P11) ----------------------------------------------------------------------
+
+
+class ReluNetModel(_Model):
+    """``out_bias + sum_i out_weights[i] * ReLU(v + biases[i])``, ``v = neighbours + centre/2``."""
+
+    centre_weight: float
+    biases: list[float]
+    out_weights: list[float]
+    out_bias: float
+
+
+class ReluExample(_Model):
+    id: str
+    rulestring: str
+    code: int
+    hidden_units: int
+    net: ReluNetModel
+
+
+class ReluExamples(_Model):
+    format_version: Literal[1]
+    construction: str
+    examples: list[ReluExample]
+    histogram: list[int]  # histogram[u] = number of the 2^18 rules needing u hidden units
+    mean_hidden_units: float

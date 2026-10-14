@@ -20,6 +20,8 @@ from cellauto.catalog import (
 from cellauto.contract.models import Fixture
 from cellauto.engines import elementary, lenia, lifelike
 from cellauto.export.binary import to_tensor
+from cellauto.inference import relu_compiler
+from cellauto.inference.bayes import infer_rule
 from cellauto.nca.checkpoints import load_manifest, load_model
 from cellauto.nca.image import make_seed
 
@@ -244,6 +246,59 @@ def lifelike_math_fixture() -> Fixture:
     )
 
 
+def inference_fixture() -> Fixture:
+    life = lifelike.LifeRule.parse("B3/S23")
+    cases: list[dict[str, Any]] = []
+
+    def bayes(name: str, x0: np.ndarray, x1: np.ndarray, eps: float) -> None:
+        post = infer_rule([(x0, x1)], eps=eps)
+        cases.append(
+            {
+                "kind": "bayes",
+                "name": name,
+                "eps": eps,
+                "x0": _rows(x0),
+                "x1": _rows(x1),
+                "counts": post.counts.tolist(),
+                "ones": post.ones.tolist(),
+                "p_one": post.p_one.tolist(),
+                "map_rule": post.map_rule().rulestring,
+                "unidentified": [list(e) for e in post.unidentified()],
+            }
+        )
+
+    soup = lifelike.random_grid(16, 16, 0.5, seed=0)
+    bayes("life from a random soup", soup, lifelike.step(soup, life), 0.0)
+    glider = place(get_pattern("glider"), (16, 16))
+    bayes("a lone glider leaves entries unobserved", glider, lifelike.step(glider, life), 0.0)
+    noisy = lifelike.step(soup, life) ^ (np.random.default_rng(1).random((16, 16)) < 0.05).astype(
+        np.uint8
+    )
+    bayes("5% output noise", soup, noisy, 0.05)
+
+    for entry in lifelike_rules():
+        if entry["id"] in ("life", "highlife", "day_and_night", "seeds"):
+            rule = lifelike.LifeRule.parse(entry["rulestring"])
+            net = relu_compiler.compile_rule(rule)
+            grid = lifelike.random_grid(12, 12, 0.5, seed=3)
+            cases.append(
+                {
+                    "kind": "relu",
+                    "rule": rule.rulestring,
+                    "hidden_units": net.hidden_units,
+                    "initial": _rows(grid),
+                    "expected": _rows(lifelike.step(grid, rule)),
+                }
+            )
+    return Fixture(
+        engine="inference",
+        description="Bayesian rule posterior counts and p_one (tolerance applies to p_one) and "
+        "grids on which the compiled ReLU network must reproduce one life-like step exactly.",
+        tolerance=1e-9,
+        cases=cases,
+    )
+
+
 def all_fixtures(repo_root: Path) -> dict[str, Fixture]:
     return {
         "elementary": elementary_fixture(),
@@ -252,5 +307,6 @@ def all_fixtures(repo_root: Path) -> dict[str, Fixture]:
         "lifelike_math": lifelike_math_fixture(),
         "rle": rle_fixture(),
         "lenia": lenia_fixture(),
+        "inference": inference_fixture(),
         "nca": nca_fixture(repo_root),
     }

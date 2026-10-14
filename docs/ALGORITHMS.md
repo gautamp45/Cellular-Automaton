@@ -11,9 +11,9 @@ languages (numpy's `default_rng` is not available in the browser), so every fixt
 explicit `initial` state; use any PRNG you like for live random starts.
 
 Sections: [ECA](#eca) · [Life-like](#lifelike) · [RLE](#rle) · [Rule code](#rule-code) ·
-[Lenia](#lenia) · [Neural CA](#nca) · [Transfer matrix](#transfer-matrix) · [Lucas](#lucas).
-[Duality](#duality) · [Mean field](#mean-field). Later phases append `#bayes-inference` and
-`#relu-compiler`.
+[Lenia](#lenia) · [Neural CA](#nca) · [Transfer matrix](#transfer-matrix) · [Lucas](#lucas) ·
+[Duality](#duality) · [Mean field](#mean-field) · [Bayes inference](#bayes-inference) ·
+[ReLU compiler](#relu-compiler).
 
 ---
 
@@ -302,3 +302,57 @@ fixed-point set symmetric under `ρ → 1 − ρ`. Life: 0 (stable), 0.1925 (uns
 linear over GF(2) and dies on 128²), random start at 0.5, 400 steps, mean density of the last 50 steps over
 3 seeds. `correlation_gap` is the absolute difference. Mean field works for gas-like rules (Seeds) and fails where
 spatial correlations dominate (Life's sparse ash, and the growing clusters of Coral and Diamoeba).
+
+---
+
+## Bayes inference
+
+Fixture: `fixtures/inference.json` (`kind: "bayes"`; tolerance 1e-9 applies to `p_one`).
+
+Given a grid `x0` and the grid `x1` one step later, estimate the life-like rule. Every lookup-table entry
+`L[s][n]` (`s` = cell state, `n` = live Moore neighbours, wrap or dead as in [Life-like](#lifelike)) is an
+independent Bernoulli parameter. Count, over every cell of every observed pair,
+
+```
+total[s][n] += 1;   ones[s][n] += x1[cell]          where  s = x0[cell],  n = neighbours of the cell in x0
+k1 = ones;  k0 = total - ones
+```
+
+**Noise-free (`eps = 0`):** an entry seen both as 0 and as 1 is a contradiction (no life-like rule explains
+the data: report it). Otherwise `p = 1` if `k1 > 0`, `p = 0` if `k0 > 0`, and an entry never observed has
+`p = 1/2`: it is **unidentifiable** from the data (a lone glider, for example, never exercises most entries).
+
+**Noisy (`0 < eps < 1/2`, each observed output bit flipped independently with probability `eps`):** with a
+uniform prior the posterior log-odds is `llr = (k1 - k0) * ln((1 - eps) / eps)` and `p = 1 / (1 + e^-llr)`
+(use `0.5 * (1 + tanh(llr / 2))` to avoid overflow). The MAP rule is `p > 1/2`; entries with `p == 1/2` are
+reported as unidentified rather than guessed. Fixture cases give `counts`, `ones`, `p_one` and the MAP
+rulestring. About 30 lines of TypeScript; the UI shows `p_one` as per-bit confidence bars.
+
+For small rule spaces, brute force is the exact alternative: simulate all 2^18 codes (`tables_from_codes`)
+and keep those whose `k`-step evolution equals the observation; the number of survivors and the bits they
+agree on measure identifiability.
+
+## ReLU compiler
+
+Fixture: `fixtures/inference.json` (`kind: "relu"`); dataset `inference/relu_examples.json`.
+
+**Claim.** Every life-like rule is computed *exactly* by
+`Conv3x3(1 -> 1, all-ones kernel with centre weight 1/2) -> ReLU units -> linear readout`.
+
+**Construction.** Let `v = n + s/2`, which takes the 18 distinct values `v_k = k/2`, `k = 0..17`. Even `k`
+is a birth entry (`s = 0`, `n = k/2`), odd `k` a survival entry (`s = 1`, `n = (k - 1)/2`); let
+`y_k = L[s][n]`. The piecewise-linear interpolant through `(v_k, y_k)` is
+
+```
+g(v) = y_0 + sum_{j=0..16} c_j * ReLU(v - j/2)
+m_j = (y_{j+1} - y_j) / 0.5,    c_0 = m_0,    c_j = m_j - m_{j-1}  (j >= 1)
+```
+
+Only nonzero `c_j` need a hidden unit. The exported net lists `centre_weight` (0.5), `biases[i] = -j/2`,
+`out_weights[i] = c_j` and `out_bias = y_0`; evaluate
+`out = out_bias + sum_i out_weights[i] * max(0, v + biases[i])` with
+`v = neighbour_count + centre_weight * cell`. All values are small multiples of 0.5, so the result is
+exactly 0 or 1 in floating point. **Life** needs 4 hidden units (kinks at `v = 2, 2.5, 3.5, 4`, weights
+`2, -2, -2, 2`). Over all 2^18 rules the number of hidden units ranges from 0 to 17 with mean exactly 12.5;
+`relu_examples.json` carries the histogram.
+

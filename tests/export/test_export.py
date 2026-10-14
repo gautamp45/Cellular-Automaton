@@ -59,6 +59,7 @@ SCHEMA_OF = {
     "elementary/rules.json": "elementary_rules",
     "elementary/atlas.json": "eca_atlas",
     "lifelike/atlas_summary.json": "lifelike_atlas_meta",
+    "inference/relu_examples.json": "relu_examples",
     "lifelike/rules.json": "lifelike_rules",
     "lifelike/patterns.json": "lifelike_patterns",
     "lenia/presets.json": "lenia_presets",
@@ -186,6 +187,51 @@ def test_atlas_dataset_matches_results(files: dict[str, bytes]) -> None:
     assert len(atlas["rows"]) == 256 and atlas["protocol"]["width"] == 251
     ref = next(d for d in json.loads(files["index.json"])["datasets"] if d["id"] == "eca_atlas")
     assert ref["produced_by"] == "cellauto analyze eca-atlas"
+
+
+def test_inference_fixture_reproduces(files: dict[str, bytes]) -> None:
+    from cellauto.inference import relu_compiler
+    from cellauto.inference.bayes import infer_rule
+
+    fx = json.loads(files["fixtures/inference.json"])
+    kinds = [c["kind"] for c in fx["cases"]]
+    assert kinds.count("bayes") == 3 and kinds.count("relu") == 4
+    for c in fx["cases"]:
+        if c["kind"] == "bayes":
+            post = infer_rule([(_grid(c["x0"]), _grid(c["x1"]))], eps=c["eps"])
+            assert post.counts.tolist() == c["counts"] and post.ones.tolist() == c["ones"]
+            assert np.allclose(post.p_one, c["p_one"], atol=fx["tolerance"])
+            assert post.map_rule().rulestring == c["map_rule"]
+            assert [list(e) for e in post.unidentified()] == c["unidentified"]
+        else:
+            rule = lifelike.LifeRule.parse(c["rule"])
+            net = relu_compiler.compile_rule(rule)
+            out = relu_compiler.apply(net, _grid(c["initial"]))
+            assert np.array_equal(out, _grid(c["expected"]))
+            assert net.hidden_units == c["hidden_units"]
+    glider = next(c for c in fx["cases"] if "glider" in c.get("name", ""))
+    assert len(glider["unidentified"]) > 0
+    noisy = next(c for c in fx["cases"] if c.get("eps") == 0.05)
+    assert noisy["map_rule"] == "B3/S23"
+
+
+def test_relu_examples(files: dict[str, bytes]) -> None:
+    from cellauto.inference import relu_compiler
+
+    doc = json.loads(files["inference/relu_examples.json"])
+    assert doc["mean_hidden_units"] == 12.5 and sum(doc["histogram"]) == 2**18
+    assert doc["histogram"] == relu_compiler.hidden_unit_histogram()
+    assert len(doc["examples"]) == len(json.loads(files["lifelike/rules.json"]))
+    life = next(e for e in doc["examples"] if e["id"] == "life")
+    assert life["hidden_units"] == 4 and life["net"]["out_weights"] == [2.0, -2.0, -2.0, 2.0]
+    rng = np.random.default_rng(0)
+    for e in doc["examples"]:  # the exported weights alone reproduce the rule exactly
+        net = e["net"]
+        g = (rng.random((9, 11)) < 0.5).astype(np.uint8)
+        v = lifelike.neighbour_counts(g) + net["centre_weight"] * g
+        hidden = np.maximum(v[..., None] + np.array(net["biases"]), 0.0)
+        out = net["out_bias"] + hidden @ np.array(net["out_weights"])
+        assert np.array_equal(out, lifelike.step(g, e["rulestring"])), e["id"]
 
 
 def test_rle_fixture_reproduces(files: dict[str, bytes]) -> None:

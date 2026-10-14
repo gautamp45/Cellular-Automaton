@@ -29,6 +29,7 @@ from cellauto.export.binary import from_tensor, to_tensor
 from cellauto.export.content import load_pages
 from cellauto.export.engines import engine_specs
 from cellauto.export.fixtures import all_fixtures
+from cellauto.inference import relu_compiler
 from cellauto.nca.checkpoints import find_repo_root, load_manifest
 from cellauto.nca.spec import ALIVE_THRESHOLD, ALPHA_CHANNEL, is_isotropic, perception_kernels
 
@@ -36,7 +37,12 @@ PRODUCED_BY = "cellauto export-web"
 # Float-heavy fixtures can differ in the last bits across numpy/BLAS builds, so `--check` compares
 # their tensors within the fixture's own tolerance instead of byte-for-byte.
 TOLERANT_PATHS = frozenset(
-    {"fixtures/lenia.json", "fixtures/nca.json", "fixtures/lifelike_math.json"}
+    {
+        "fixtures/lenia.json",
+        "fixtures/nca.json",
+        "fixtures/lifelike_math.json",
+        "fixtures/inference.json",
+    }
 )
 
 
@@ -217,6 +223,41 @@ def _lifelike_atlas(b: _Builder) -> None:
     )  # fmt: skip
 
 
+def _inference(b: _Builder) -> None:
+    examples = []
+    for r in lifelike_rules():
+        rule = LifeRule.parse(r["rulestring"])
+        net = relu_compiler.compile_rule(rule)
+        examples.append(
+            {
+                "id": r["id"],
+                "rulestring": rule.rulestring,
+                "code": rule.code,
+                "hidden_units": net.hidden_units,
+                "net": {
+                    "centre_weight": net.centre_weight,
+                    "biases": net.biases.tolist(),
+                    "out_weights": net.out_weights.tolist(),
+                    "out_bias": net.out_bias,
+                },
+            }
+        )
+    histogram = relu_compiler.hidden_unit_histogram()
+    b.add_json(
+        "inference/relu_examples.json", "relu_examples", "relu_examples",
+        {
+            "format_version": 1,
+            "construction": relu_compiler.CONSTRUCTION,
+            "examples": examples,
+            "histogram": histogram,
+            "mean_hidden_units": sum(u * n for u, n in enumerate(histogram)) / sum(histogram),
+        },
+        "ReLU-compiled rules",
+        "Every life-like rule as an exact Conv3x3 -> ReLU -> linear network, plus the "
+        "distribution of hidden units over all 2^18 rules.",
+    )  # fmt: skip
+
+
 def _lenia(b: _Builder) -> None:
     presets = []
     for p in lenia_presets():
@@ -350,6 +391,7 @@ _BUILDERS: list[Callable[[_Builder], None]] = [
     _eca_atlas,
     _lifelike,
     _lifelike_atlas,
+    _inference,
     _lenia,
     _nca,
     _fixtures,

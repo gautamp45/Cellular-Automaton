@@ -25,6 +25,7 @@ TOP_LEVEL: dict[str, Any] = {
     "fixture": m.Fixture,
     "eca_atlas": m.EcaAtlas,
     "lifelike_atlas_meta": m.LifelikeAtlasMeta,
+    "relu_examples": m.ReluExamples,
 }
 
 
