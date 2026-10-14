@@ -6,7 +6,7 @@ Guidance for Claude Code sessions in this repo. Keep it short and current; updat
 
 `cellauto` is a Python package (being built) with reference implementations and analyses of cellular automata: elementary (1D), life-like (2D), Lenia (continuous) and Neural CA. It exports a **static, schema-validated data backend** (`web/public/data/`) for a future client-side frontend. There is no server.
 
-**Current state:** mid-refactor, driven by a written plan. Progress lives in `docs/plan/STATUS.md`. Until P00–P08 are done, the top-level legacy scripts (`GameofLife.py`, `TD CA/`, `neural-cellular-automata/`, …) still exist and are being replaced phase by phase. Don't fix or extend legacy code; replace it as the plan says.
+**Current state:** mid-refactor, driven by a written plan. Progress lives in `docs/plan/STATUS.md`. Until P00–P08 are done, the top-level legacy scripts (`neural-cellular-automata/`, …) still exist and are being replaced phase by phase. Don't fix or extend legacy code; replace it as the plan says.
 
 ## Start every session with
 

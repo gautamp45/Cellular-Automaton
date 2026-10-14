@@ -1,0 +1,96 @@
+[
+  {
+    "rule": 0,
+    "wolfram_class": 1,
+    "description": "Everything dies after one step."
+  },
+  {
+    "rule": 8,
+    "wolfram_class": 1,
+    "description": "Collapses to the all-zero state."
+  },
+  {
+    "rule": 32,
+    "wolfram_class": 1,
+    "description": "Collapses to the all-zero state."
+  },
+  {
+    "rule": 40,
+    "wolfram_class": 1,
+    "description": "Collapses to the all-zero state."
+  },
+  {
+    "rule": 1,
+    "wolfram_class": 2,
+    "description": "Settles into a simple periodic or fixed pattern."
+  },
+  {
+    "rule": 4,
+    "wolfram_class": 2,
+    "description": "Keeps isolated cells as a fixed pattern."
+  },
+  {
+    "rule": 108,
+    "wolfram_class": 2,
+    "description": "Settles into a simple periodic pattern."
+  },
+  {
+    "rule": 184,
+    "name": "Traffic",
+    "wolfram_class": 2,
+    "description": "Models one-lane traffic flow: particles move right unless blocked, conserving their number."
+  },
+  {
+    "rule": 18,
+    "wolfram_class": 3,
+    "description": "Chaotic-looking triangles; behaves like rule 90 on a single seed."
+  },
+  {
+    "rule": 22,
+    "wolfram_class": 3,
+    "description": "Nested triangular patterns from a single cell, chaotic from random starts."
+  },
+  {
+    "rule": 30,
+    "name": "Rule 30",
+    "wolfram_class": 3,
+    "description": "Chaotic; its centre column is a good pseudo-random bit stream (used in Mathematica)."
+  },
+  {
+    "rule": 45,
+    "wolfram_class": 3,
+    "description": "Chaotic, with an irregular texture."
+  },
+  {
+    "rule": 90,
+    "name": "Sierpinski",
+    "wolfram_class": 3,
+    "description": "Additive (XOR of both neighbours): a single cell draws the Sierpinski triangle."
+  },
+  {
+    "rule": 126,
+    "wolfram_class": 3,
+    "description": "Chaotic growth of nested triangles."
+  },
+  {
+    "rule": 150,
+    "wolfram_class": 3,
+    "description": "Additive (XOR of all three cells), producing a fractal pattern."
+  },
+  {
+    "rule": 54,
+    "wolfram_class": 4,
+    "description": "Complex: localized structures interact across a chaotic-looking background."
+  },
+  {
+    "rule": 106,
+    "wolfram_class": 4,
+    "description": "Complex-looking; its class is disputed in the literature."
+  },
+  {
+    "rule": 110,
+    "name": "Rule 110",
+    "wolfram_class": 4,
+    "description": "Complex and Turing-complete (Cook, 2004)."
+  }
+]

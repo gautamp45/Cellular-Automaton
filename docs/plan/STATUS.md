@@ -9,7 +9,7 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 | P00 | Hygiene, archive crypto, remove Rule Predictor | Must | ✅ | see log | Also removed the monorepo `packages/` + `tests/` from `main` (owner decision, see log) |
 | P01 | Scaffold, tooling, CI | Must | ✅ | see log | ruff `extend-exclude` uses `docs/plan` (not just `/reference`): ruff's formatter also formats the code blocks in the plan's `.md` files |
 | P02 | Elementary engine | Must | ✅ | see log | `OD_CA.py` removed |
-| P03 | Life-like engine, RLE, catalogs | Must | ⬜ | | |
+| P03 | Life-like engine, RLE, catalogs | Must | ✅ | see log | `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed |
 | P04 | Lenia | Should | ⬜ | | Needs a one-time download of `animals.json` (GitHub raw) |
 | P05 | NCA torch-free inference + manifest | Must | ⬜ | | |
 | P06 | Renderer + CLI | Must | ⬜ | | |
@@ -36,6 +36,8 @@ If the owner hasn't answered, proceed with the defaults and note it in the sessi
 ## Session log (newest first)
 
 Add one entry per session: date, branch, phases touched, what's left mid-phase, surprises.
+
+- **P03 done** (two commits). `engines/lifelike.py` (LifeRule parse/code/table, batch-aware `neighbour_counts`, `step`, `step_batch`, `iterate`, `run`, `random_grid`), `catalog/{rle,patterns,rules}.py` + `catalog/data/{patterns,lifelike_rules,elementary_rules}.json` (12 patterns, 27 life-like rules, 18 reference ECA rules). Every verified pattern vector (periods, glider/LWSS shifts, R-pentomino 27/178, acorn 57, diehard 2→0, Gosper gun 36/41/46/51/56) passed unchanged; hypothesis checks `step` against a slow loop and all 2¹⁸ codes round-trip. Legacy `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed and dropped from ruff excludes; `CLAUDE.md` legacy list updated. Judgement call: catalog `description`/`tags` text for rules and patterns is my own wording (not in the phase file); `self-dual` is tagged only on `day_and_night` until P10 computes duality for all. **Next: P04.**
 
 - **P02 done** (same session). `src/cellauto/engines/elementary.py` + `tests/engines/test_elementary.py` (18 tests incl. A051023 rule-30 column, Gould's sequence, B3 edge regression, GF(2) nilpotency trap, hypothesis reference/mirror properties). All verified vectors passed unchanged. `OD_CA.py` `git rm`'d and dropped from ruff `extend-exclude`; `CLAUDE.md` legacy list updated. Test-only note: variable `l` renamed `lt` (ruff E741). **Next: P03.**
 
