@@ -18,6 +18,7 @@ from typing import Any
 import numpy as np
 
 from cellauto import __version__
+from cellauto.analysis import elementary as eca
 from cellauto.catalog import elementary_rules, lenia_presets, lifelike_rules, parse_rle, patterns
 from cellauto.contract.models import DatasetRef, Index, NcaWeights
 from cellauto.contract.schema import adapter, dumps, json_schemas, schema_path
@@ -58,13 +59,20 @@ class _Builder:
         self.entries[path] = entry
 
     def add_json(
-        self, path: str, id_: str, schema: str, value: Any, title: str, description: str
+        self,
+        path: str,
+        id_: str,
+        schema: str,
+        value: Any,
+        title: str,
+        description: str,
+        produced_by: str = PRODUCED_BY,
     ) -> None:
         """Validate ``value`` against the contract model, then store canonical JSON."""
         ad = adapter(schema)
         validated = ad.validate_python(value)
         data = dumps(ad.dump_python(validated, mode="json", by_alias=True)).encode("utf-8")
-        self._put(path, _Entry(data, id_, title, description, schema=schema))
+        self._put(path, _Entry(data, id_, title, description, produced_by, schema=schema))
 
     def add_file(self, path: str, id_: str, data: bytes, title: str, description: str) -> None:
         self._put(path, _Entry(data, id_, title, description))
@@ -82,6 +90,7 @@ def _engines(b: _Builder) -> None:
 
 def _elementary(b: _Builder) -> None:
     catalog = {r["rule"]: r for r in elementary_rules()}
+    reversible = set(eca.reversible_rules())
     rules = []
     for n in range(256):
         c = catalog.get(n)
@@ -92,11 +101,28 @@ def _elementary(b: _Builder) -> None:
                 "description": c["description"] if c else f"Elementary rule {n}.",
                 "wolfram_class": c.get("wolfram_class") if c else None,
                 "table": rule_table(n).tolist(),
+                "equivalence_class": eca.orbit(n),
+                "lambda": eca.lambda_(n),
+                "surjective": eca.is_surjective(n),
+                "reversible": n in reversible,
             }
         )
     b.add_json(
         "elementary/rules.json", "elementary_rules", "elementary_rules", rules,
-        "Elementary rules", "All 256 elementary rules with lookup tables and catalog annotations.",
+        "Elementary rules", "All 256 elementary rules with lookup tables, symmetry class, "
+        "lambda, surjectivity, reversibility and catalog annotations.",
+    )  # fmt: skip
+
+
+def _eca_atlas(b: _Builder) -> None:
+    path = b.repo_root / "results" / "eca_atlas.json"
+    if not path.is_file():
+        return
+    b.add_json(
+        "elementary/atlas.json", "eca_atlas", "eca_atlas", json.loads(path.read_text())["atlas"],
+        "Elementary behaviour atlas",
+        "Behaviour features, PCA embedding and clusters for all 256 rules.",
+        produced_by="cellauto analyze eca-atlas",
     )  # fmt: skip
 
 
@@ -271,8 +297,16 @@ def _schemas(b: _Builder) -> None:
 
 
 _BUILDERS: list[Callable[[_Builder], None]] = [
-    _engines, _elementary, _lifelike, _lenia, _nca, _fixtures, _content, _schemas,
-]  # fmt: skip
+    _engines,
+    _elementary,
+    _eca_atlas,
+    _lifelike,
+    _lenia,
+    _nca,
+    _fixtures,
+    _content,
+    _schemas,
+]
 
 
 # --- public API -------------------------------------------------------------------------------

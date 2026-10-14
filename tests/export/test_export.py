@@ -57,6 +57,7 @@ def test_no_timestamps_and_sorted_keys(files: dict[str, bytes]) -> None:
 SCHEMA_OF = {
     "engines.json": "engines",
     "elementary/rules.json": "elementary_rules",
+    "elementary/atlas.json": "eca_atlas",
     "lifelike/rules.json": "lifelike_rules",
     "lifelike/patterns.json": "lifelike_patterns",
     "lenia/presets.json": "lenia_presets",
@@ -83,8 +84,12 @@ def test_catalog_contents(files: dict[str, bytes]) -> None:
     rules = json.loads(files["elementary/rules.json"])
     assert [r["rule"] for r in rules] == list(range(256))
     assert rules[110]["wolfram_class"] == 4 and rules[110]["name"] == "Rule 110"
-    assert rules[7]["wolfram_class"] is None and rules[7]["surjective"] is None
+    assert rules[7]["wolfram_class"] is None and rules[7]["surjective"] is False
     assert rules[30]["table"] == [0, 1, 1, 1, 1, 0, 0, 0]
+    assert rules[30]["equivalence_class"] == [30, 86, 135, 149] and rules[30]["lambda"] == 0.5
+    assert rules[30]["surjective"] is True and rules[30]["reversible"] is False
+    assert [r["rule"] for r in rules if r["reversible"]] == [15, 51, 85, 170, 204, 240]
+    assert sum(r["surjective"] for r in rules) == 30
     life = next(r for r in json.loads(files["lifelike/rules.json"]) if r["id"] == "life")
     assert life["rulestring"] == "B3/S23" and life["code"] == 8 + 2048 + 4096
     assert life["mean_field"] is None and life["dual"] is None
@@ -152,6 +157,30 @@ def test_lifelike_fixture_reproduces(files: dict[str, bytes]) -> None:
         assert np.array_equal(got, _grid(c["expected"])), c["name"]
     glider = fx["cases"][0]
     assert _grid(glider["expected"]).sum() == 5
+
+
+def test_elementary_math_fixture_reproduces(files: dict[str, bytes]) -> None:
+    from cellauto.analysis import elementary as eca
+
+    cases = json.loads(files["fixtures/elementary_math.json"])["cases"]
+    kinds = [c["kind"] for c in cases]
+    assert kinds.count("preimage_count") == 10 and kinds.count("garden_of_eden") == 3
+    for c in cases:
+        if c["kind"] == "preimage_count":
+            assert eca.preimage_count(c["rule"], c["config"]) == c["count"]
+        elif c["kind"] == "garden_of_eden":
+            assert eca.garden_of_eden_count(c["rule"], c["n"]) == c["count"]
+        else:
+            sim = elementary.run(elementary.single_cell(c["width"]), 90, 16)
+            assert [elementary.to_bits(r) for r in sim] == c["rows"]
+
+
+def test_atlas_dataset_matches_results(files: dict[str, bytes]) -> None:
+    atlas = json.loads(files["elementary/atlas.json"])
+    assert atlas == json.loads((ROOT / "results" / "eca_atlas.json").read_text())["atlas"]
+    assert len(atlas["rows"]) == 256 and atlas["protocol"]["width"] == 251
+    ref = next(d for d in json.loads(files["index.json"])["datasets"] if d["id"] == "eca_atlas")
+    assert ref["produced_by"] == "cellauto analyze eca-atlas"
 
 
 def test_rle_fixture_reproduces(files: dict[str, bytes]) -> None:

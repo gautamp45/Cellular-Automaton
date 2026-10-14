@@ -23,6 +23,7 @@ TOP_LEVEL: dict[str, Any] = {
     "binary_table_header": m.BinaryTableHeader,
     "content_index": list[m.ContentPage],
     "fixture": m.Fixture,
+    "eca_atlas": m.EcaAtlas,
 }
 
 

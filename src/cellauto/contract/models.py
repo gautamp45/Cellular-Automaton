@@ -244,3 +244,85 @@ class Fixture(_Model):
     description: str
     tolerance: float | None
     cases: list[dict[str, Any]]
+
+
+# --- ECA behaviour atlas (P09) -----------------------------------------------------------------
+
+
+class EcaProtocol(_Model):
+    width: int
+    steps: int
+    window_start: int
+    trials: int
+    seed: int
+    max_period: int
+
+
+class EcaFeature(_Model):
+    name: str
+    description: str
+    unit: str | None
+    symmetry_invariant: bool  # unchanged by reflection and complement
+
+
+class EcaEmbedding(_Model):
+    features: list[str]  # standardised features used for PCA and clustering
+    components: list[list[float]]  # (2, len(features)); sign-fixed
+    explained_variance: list[float]
+
+
+class EcaAtlasRow(_Model):
+    rule: int
+    damage: float
+    compression: float
+    density: float
+    activity: float
+    block_entropy: float
+    period: int  # 0 = aperiodic within the protocol
+    pca_x: float
+    pca_y: float
+    cluster: int  # clustering with `chosen_k`
+    cluster_k4: int  # clustering with k = 4
+
+
+class EcaClusterSummary(_Model):
+    cluster: int
+    size: int
+    centroid: dict[str, float]  # mean of each feature over the cluster's rules
+    example_rules: list[int]
+
+
+class EcaAssignment(_Model):
+    rule: int
+    wolfram_class: int
+    cluster: int
+
+
+class EcaContingency(_Model):
+    classes: list[int]  # Wolfram classes present among the labelled reference rules
+    clusters: list[int]
+    counts: list[list[int]]  # counts[i][j]: rules of class classes[i] in cluster clusters[j]
+    assignments: list[EcaAssignment]
+
+
+class EcaKScore(_Model):
+    k: int
+    silhouette: float
+
+
+class EcaClustering(_Model):
+    k: int
+    silhouette: float
+    summary: list[EcaClusterSummary]
+    contingency: EcaContingency
+
+
+class EcaAtlas(_Model):
+    format_version: Literal[1]
+    protocol: EcaProtocol
+    features: list[EcaFeature]
+    embedding: EcaEmbedding
+    k_selection: list[EcaKScore]
+    chosen_k: int
+    clusterings: list[EcaClustering]  # chosen k, plus k = 4 when different
+    rows: list[EcaAtlasRow]  # 256 rows, ordered by rule

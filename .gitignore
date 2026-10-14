@@ -16,3 +16,6 @@ runs/
 .idea/
 node_modules/
 web/dist/
+
+# quick (CI-sized) analysis runs are not committed
+results/quick/

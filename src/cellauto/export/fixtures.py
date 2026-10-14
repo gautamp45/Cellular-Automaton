@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 
+from cellauto.analysis import elementary as eca
 from cellauto.catalog import get_pattern, lenia_presets, parse_rle, patterns, place
 from cellauto.contract.models import Fixture
 from cellauto.engines import elementary, lenia, lifelike
@@ -171,9 +172,37 @@ def nca_fixture(repo_root: Path) -> Fixture:
     )
 
 
+def elementary_math_fixture() -> Fixture:
+    cases: list[dict[str, Any]] = []
+    for rule in (30, 90, 110, 150, 184):
+        for seed in (1, 2):
+            bits = elementary.to_bits(elementary.random_row(10, seed=seed))
+            cases.append({"kind": "preimage_count", "rule": rule, "config": bits,
+                          "count": eca.preimage_count(rule, bits)})  # fmt: skip
+    for rule in (30, 90, 110):
+        cases.append({"kind": "garden_of_eden", "rule": rule, "n": 8,
+                      "count": eca.garden_of_eden_count(rule, 8)})  # fmt: skip
+    width = 41
+    cases.append(
+        {
+            "kind": "rule90_closed_form",
+            "width": width,
+            "rows": [elementary.to_bits(eca.rule90_closed_form(t, width)) for t in range(17)],
+        }
+    )
+    return Fixture(
+        engine="elementary_math",
+        description="Preimage counts of ring configurations (transfer matrices), Garden-of-Eden "
+        "counts, and rule 90 rows t = 0..16 from the Lucas closed form.",
+        tolerance=None,
+        cases=cases,
+    )
+
+
 def all_fixtures(repo_root: Path) -> dict[str, Fixture]:
     return {
         "elementary": elementary_fixture(),
+        "elementary_math": elementary_math_fixture(),
         "lifelike": lifelike_fixture(),
         "rle": rle_fixture(),
         "lenia": lenia_fixture(),

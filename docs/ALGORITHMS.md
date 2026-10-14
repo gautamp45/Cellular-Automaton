@@ -11,8 +11,8 @@ languages (numpy's `default_rng` is not available in the browser), so every fixt
 explicit `initial` state; use any PRNG you like for live random starts.
 
 Sections: [ECA](#eca) · [Life-like](#lifelike) · [RLE](#rle) · [Rule code](#rule-code) ·
-[Lenia](#lenia) · [Neural CA](#nca). Later phases append `#transfer-matrix`, `#lucas`,
-`#duality`, `#mean-field`, `#bayes-inference` and `#relu-compiler`.
+[Lenia](#lenia) · [Neural CA](#nca) · [Transfer matrix](#transfer-matrix) · [Lucas](#lucas).
+Later phases append `#duality`, `#mean-field`, `#bayes-inference` and `#relu-compiler`.
 
 ---
 
@@ -202,3 +202,55 @@ instead (centre ~ U(−0.5, 0.5)², r ~ U(0.1, 0.4)).
 **Hidden activations** (`hidden_activations` in the fixture, `(128, 784)`): `relu(w1 @ per + b1)` for the
 state at `hidden_state_step`; the browser can colour each cell by a hidden unit to show "inside the
 cell".
+
+---
+
+## Transfer matrix
+
+Fixture: `fixtures/elementary_math.json` (`kind: "preimage_count"`, `"garden_of_eden"`).
+
+How many ring configurations `x` of length `N` satisfy `step(x, rule) = y`? Use the de Bruijn graph
+on pairs of adjacent cells. A state is `(a, b)`, numbered `2a + b`. For an output bit `y`, define the
+4×4 matrix
+
+```
+M_y[2a + b][2b + c] = 1   iff   table[4a + 2b + c] == y       (all other entries 0)
+```
+
+Reading `y_1 … y_N` around the ring, the number of preimages is the number of closed walks of length
+`N` that emit that sequence:
+
+```
+preimages(y) = trace( M_{y_1} · M_{y_2} · … · M_{y_N} )          (N >= 1)
+```
+
+Entries can reach `2^N`: use `BigInt` beyond 53 bits (about 53 cells). A configuration with
+`preimages = 0` is a **Garden of Eden** configuration. Facts the fixture pins down (rings of 12 cells,
+4096 configurations): rule 30 has 280 Gardens of Eden, rule 110 has 1971, and rule 90 has 3072.
+Rule 90 is surjective on the infinite line, yet most ring configurations have no preimage: surjectivity
+on ℤ does not imply surjectivity on rings (on an even ring, rule 90 loses rank 2 over GF(2), so its image
+has `2^(N-2)` configurations).
+
+**Surjectivity on the infinite line** (Hedlund; Amoroso-Patt), exported as `surjective` in
+`elementary/rules.json`: take the set `S0 = {0, 1, 2, 3}` of de Bruijn states; for each output bit `y`,
+the successor set of `S` is `{ 2(ab mod 2) + c : ab in S, c in {0,1}, table[2ab + c] == y }`; the rule is
+surjective iff the empty set is never reached from `S0` by repeated successors.
+
+## Lucas
+
+Fixture: `fixtures/elementary_math.json` (`kind: "rule90_closed_form"`, rows `t = 0..16`).
+
+Rule 90 is additive over GF(2): `new[x] = old[x-1] xor old[x+1]`. From a single live cell, row `t`
+is the `t`-th row of Pascal's triangle mod 2 (the Sierpinski triangle). Cell `x` (relative to the
+centre cell `width // 2`) is live iff
+
+```
+|x| <= t,   (t + x) is even,   and with k = (t + x) / 2:   (k & (t - k)) == 0
+```
+
+by Lucas' theorem (`C(t, k)` is odd iff the binary digits of `k` are a subset of those of `t`). This
+needs no simulation, but is only valid before the pattern wraps: `t <= width // 2`. The number of live
+cells in row `t` is `2^popcount(t)` (Gould's sequence).
+
+On a ring of `N = 2^k` cells rule 90 is the linear map `S + S^-1` over GF(2) and
+`(S + S^-1)^(2^(k-1)) = 0`: every initial state dies. Use a prime or odd width for rule 90 experiments.

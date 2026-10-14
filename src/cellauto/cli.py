@@ -158,6 +158,25 @@ def _cmd_export_web(a: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_analyze(a: argparse.Namespace) -> int:
+    import json
+
+    from cellauto.nca.checkpoints import find_repo_root
+
+    root = find_repo_root()
+    if a.what == "eca-atlas":
+        from cellauto.analysis.eca_atlas import run_atlas
+
+        result = run_atlas(quick=a.quick)
+        out = root / "results" / ("quick" if a.quick else "") / "eca_atlas.json"
+    else:  # pragma: no cover - argparse restricts the choices
+        raise CliError(f"unknown analysis {a.what!r}")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"wrote {out} ({result['meta']['runtime_s']} s)")
+    return 0
+
+
 def _cmd_list(a: argparse.Namespace) -> int:
     if a.what == "elementary":
         for r in elementary_rules():
@@ -246,6 +265,12 @@ def build_parser() -> argparse.ArgumentParser:
     ex = add("export-web", "write (or --check) the static data backend", _cmd_export_web)
     ex.add_argument("--out", default=None, help="output dir (default: <repo>/web/public/data)")
     ex.add_argument("--check", action="store_true", help="exit 1 if the output is stale")
+
+    an = add("analyze", "run an analysis and write results/*.json", _cmd_analyze)
+    an.add_argument("what", choices=["eca-atlas"])
+    an.add_argument(
+        "--quick", action="store_true", help="small protocol, written to results/quick/"
+    )
 
     ls = add("list", "list catalog entries", _cmd_list)
     ls.add_argument("what", choices=["elementary", "lifelike", "patterns", "lenia", "models"])
