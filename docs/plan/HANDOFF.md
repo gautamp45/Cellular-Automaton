@@ -8,7 +8,7 @@ This is for whoever (human or AI) continues this work in a new session with no m
 
 - **Goal:** turn this repo into the `cellauto` package plus a static data backend (`web/public/data/`) for a frontend showcasing 1D, 2D (Life + variants), Lenia and Neural CA, with math/ML analysis. The frontend comes later and must not need backend changes.
 - **Plan:** `docs/plan/README.md` (overview, principles, phase table, frontend-completeness matrix, rules) plus one file per phase, `P00`–`P15`. The audit of the original code is in `AUDIT.md`.
-- **Progress:** `docs/plan/STATUS.md`. As of the planning session, **no production code has changed**. The repo is still the original scripts, and the next phase is **P00**.
+- **Progress:** `docs/plan/STATUS.md`. P00–P12 are done and pushed; open phases are P13, P14 and P15. The frontend can start (§6).
 - **Evidence:** `docs/plan/reference/` has the scripts that produced every "verified" number.
 
 ## 2. Branches (read before your first git command)

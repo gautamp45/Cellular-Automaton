@@ -1,65 +1,70 @@
-# Cellular Automaton Monorepo
+# cellauto
 
-Three independent Python packages exploring different facets of Cellular Automata —
-from PyTorch self-organisation to stream ciphers to interactive Life-like simulations.
+Cellular automata, from hand-written rules to learned rules: **elementary** (1D), **life-like** (2D),
+**Lenia** (continuous) and **neural CA**, with reference implementations, mathematical analysis, rule
+inference, and a static, schema-validated **data backend** for a client-side web frontend.
 
-## Packages
+> Status: the Python package and data backend are built through phase P12 of
+> [`docs/plan/`](docs/plan/README.md) (progress in [`docs/plan/STATUS.md`](docs/plan/STATUS.md)). The
+> frontend has not been started; the learnability study (P13), NCA retraining (P14) and the final
+> report phase (P15) are still open.
 
-### [`packages/neural_ca`](packages/neural_ca/)
+## The idea
 
-**Growing Neural Cellular Automata** — PyTorch implementation where a small neural
-network learns the local update rule that causes a grid of cells to grow into a target
-image and regenerate after damage.
+Elementary CA (8-bit rules, exact maths) → life-like CA (18-bit rules, emergent structure) → Lenia
+(continuous state, space and time) → neural CA (the update rule *is* a neural network learned by
+gradient descent). Then the arrow is reversed: given observed dynamics, recover the rule.
 
-Key files: `model.py` · `train.py` · `visualize.py` · `helper.py`  
-Run: `cd packages/neural_ca && python src/train.py`
+| Layer | What is here |
+|---|---|
+| Elementary | vectorised engine; 88 symmetry classes; surjectivity / reversibility; preimage counting by transfer matrices; Lucas closed form for rule 90; behaviour atlas of all 256 rules |
+| Life-like | table-driven engine, RLE, 27 named rules, 12 patterns; duality, mean-field theory; **atlas of all 131,072 B0-free rules** |
+| Lenia | FFT engine, Orbium presets, Life as a special case |
+| Neural CA | torch-free inference for 25 trained models; torch training; multi-seed evaluation (30 seeds) with bootstrap CIs and paired tests: direction-aware filters converge, symmetric filters and the Hinge loss do not, and training with damage regenerates ~2.4× faster |
+| Inverse problems | exact Bayesian posterior, exhaustive search over all 2^18 rules, exact ReLU compiler, differentiable-CA study |
 
----
-
-### [`packages/ca_cryptography`](packages/ca_cryptography/)
-
-**1D CA Stream Cipher** — A 1D elementary CA evolves a random initial state; the final
-state is XOR-ed with a binary-encoded plaintext to produce ciphertext. Includes a
-brute-force reverse-evolution attack demo.
-
-Key files: `ca.py` · `rsrg.py` · `enc_dec.py` · `main.py`  
-Run: `cd packages/ca_cryptography/src && python main.py`
-
----
-
-### [`packages/classical_ca`](packages/classical_ca/)
-
-**Classic CA simulations** — Conway's Game of Life, general Life-like 2D CA with a
-Pygame interactive UI (draw cells, toggle rules), 1D elementary CA, population
-graphing, and a dataset builder for rule-prediction experiments.
-
-Key files: `ca_2d.py` · `ca_1d.py` · `game_of_life.py` · `main_run.py`  
-Run: `cd packages/classical_ca/src && python main_run.py`
-
----
-
-## Repository layout
-
-```
-packages/
-├── neural_ca/
-│   ├── src/              # model, helper, train, visualize
-│   ├── configs/          # train_config.yaml, visualize_config.yaml
-│   ├── notebooks/
-│   └── data/             # target images (gitignored)
-├── ca_cryptography/
-│   └── src/              # ca, rsrg, enc_dec, converter, visualiser, main, attacks
-└── classical_ca/
-    ├── src/              # ca_1d, ca_2d, game_of_life, game_board, grapher, ...
-    └── notebooks/        # Random Forest rule predictor (WIP)
-```
-
-## Quick start
-
-Each package has its own `requirements.txt`:
+## Install and use
 
 ```bash
-pip install -r packages/neural_ca/requirements.txt
-pip install -r packages/ca_cryptography/requirements.txt
-pip install -r packages/classical_ca/requirements.txt
+python3 -m pip install -e ".[dev]"           # numpy, pillow, pydantic (+ pytest, ruff, mypy, hypothesis)
+python3 -m pip install -e ".[dev,train]"     # adds torch, pyyaml, tqdm for training and the inference study
+
+cellauto elementary --rule 30 --out rule30.png
+cellauto life --preset highlife --pattern glider --steps 120 --out life.gif
+cellauto lenia --preset O2u --steps 300 --out orbium.gif
+cellauto nca run --model chest-l2-sobel-damage --damage-at 100 --out chest.gif
+cellauto list {elementary|lifelike|patterns|lenia|models}
+cellauto export-web [--check]                # regenerate / verify web/public/data
+cellauto analyze {eca-atlas|lifelike-atlas|inference-study|nca-eval} [--quick]
+cellauto nca train --config configs/nca/chest-l2-sobel-damage.yaml
 ```
+
+Checks before every commit: `ruff check . && ruff format --check . && mypy src && pytest -q`
+(`pytest -q -m slow` for the long tests, `pytest -q -m torch` with torch installed).
+
+## Layout
+
+```
+src/cellauto/   engines/ catalog/ nca/ analysis/ inference/ contract/ export/ render.py cli.py
+models/nca/     25 trained checkpoints (.pt, torch-free .npz) and manifest.json
+assets/nca/     target images and growth animations
+results/        committed outputs of the analyses (atlases, inference study, NCA evaluation)
+web/public/data GENERATED static data backend for the frontend (committed; `export-web --check` in CI)
+content/        explainer pages exported to the frontend
+docs/           ALGORITHMS.md (browser implementation spec), DATA_CONTRACT.md, plan/
+experiments/    archived legacy code (a CA stream-cipher experiment), not maintained
+```
+
+The contract between Python and the frontend is [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md); every
+algorithm the browser must re-implement is specified, with golden fixtures, in
+[`docs/ALGORITHMS.md`](docs/ALGORITHMS.md).
+
+## Credits
+
+Lenia: Bert Wang-Chak Chan, [Chakazul/Lenia](https://github.com/Chakazul/Lenia) (MIT), source of the
+Orbium presets. Neural CA: Mordvintsev, Randazzo, Niklasson and Levin, *Growing Neural Cellular
+Automata*, Distill 2020. Targets are 28×28 MedMNIST images. The archived cipher experiment includes work
+by Manan Shah. Upstream references are listed in [`docs/plan/README.md`](docs/plan/README.md).
+
+License: MIT is declared in `pyproject.toml`; the licence file and the collaborator's confirmation are
+still open items (see `docs/plan/STATUS.md`).

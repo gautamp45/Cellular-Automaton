@@ -4,9 +4,9 @@ Guidance for Claude Code sessions in this repo. Keep it short and current; updat
 
 ## What this repo is
 
-`cellauto` is a Python package (being built) with reference implementations and analyses of cellular automata: elementary (1D), life-like (2D), Lenia (continuous) and Neural CA. It exports a **static, schema-validated data backend** (`web/public/data/`) for a future client-side frontend. There is no server.
+`cellauto` is a Python package with reference implementations and analyses of cellular automata: elementary (1D), life-like (2D), Lenia (continuous) and Neural CA, plus rule-inference studies. It exports a **static, schema-validated data backend** (`web/public/data/`) for a client-side frontend. There is no server.
 
-**Current state:** mid-refactor, driven by a written plan. Progress lives in `docs/plan/STATUS.md`. Until P00–P08 are done, the top-level legacy scripts (`neural-cellular-automata/`, …) still exist and are being replaced phase by phase. Don't fix or extend legacy code; replace it as the plan says.
+**Current state:** built through phase **P12** of the written plan (all legacy scripts are gone; `experiments/ca_crypto/` is the archived remainder). Open phases: P13 (learnability, torch), P14 (NCA retraining, GPU), P15 (README/report/model cards/licence). Progress lives in `docs/plan/STATUS.md`. The frontend can start now (see HANDOFF §6); backend changes from here are additive only.
 
 ## Start every session with
 
@@ -23,7 +23,8 @@ Guidance for Claude Code sessions in this repo. Keep it short and current; updat
 - No dependencies beyond P01's list (core: numpy, pillow, pydantic; `[train]`: torch, pyyaml, tqdm; `[dev]`: pytest, hypothesis, ruff, mypy; P15 may add `[docs]`: matplotlib).
 - Exports to `web/public/data/` must be deterministic: sorted keys, no timestamps. After P07, contract changes are **additive only** (see `docs/DATA_CONTRACT.md`).
 - Use `git mv` for moves. One phase per commit (or two, as the phase file says), using its commit message.
-- Update `docs/plan/STATUS.md` in the same commit that completes or pauses a phase.
+- Update `docs/plan/STATUS.md` (and any doc whose subject changed) in the same commit that completes or pauses a phase.
+- Long analyses go behind `cellauto analyze … [--quick]`; their results live in `results/` and are exported by `export-web`. Re-run `cellauto export-web` and commit `web/public/data/` whenever data, contract or content change.
 - Don't create PRs unless asked. Push only to your session's designated branch.
 
 ## Commands (from P01 on)
