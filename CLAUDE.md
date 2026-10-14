@@ -12,7 +12,7 @@ Guidance for Claude Code sessions in this repo. Keep it short and current; updat
 
 1. `git status && git log --oneline -5`
 2. Read `docs/plan/STATUS.md` (what's done and what's next) and, on your first session, `docs/plan/HANDOFF.md` (branches, environment, pitfalls).
-3. If `docs/plan/` is missing on your branch, follow HANDOFF §2 to merge `origin/claude/zen-clarke-bey6eo`.
+3. If `docs/plan/` or `src/cellauto/` is missing on your branch, merge `origin/main` into it (HANDOFF §2); `main` has everything.
 4. Read the phase file you're executing: `docs/plan/P<NN>-*.md`.
 
 ## Non-negotiable rules
@@ -34,16 +34,19 @@ python3 -m pip install -e ".[dev]"     # the SessionStart hook does this automat
 ruff check . && ruff format --check . && mypy src && pytest -q    # must pass before every commit
 pytest -q -m slow                       # long tests (atlas, NCA convergence); CI runs them weekly
 cellauto export-web --check             # from P07: fails if committed web data is stale
+cellauto analyze {eca-atlas|lifelike-atlas|inference-study|nca-eval} [--quick] [--workers N]
+                                        # long analyses -> results/*.json (committed); then cellauto export-web
 ```
+Runtimes, the new-dataset recipe and the numbers to quote are in `docs/plan/STATUS.md`.
 If `pytest` can't import `cellauto`, you're hitting the uv-tool shim in `/root/.local/bin`. Use `python3 -m pytest` (HANDOFF §3).
 
 ## Environment quick facts (cloud sandbox)
 
 - `download.pytorch.org` is blocked, but torch **can** be installed from PyPI in an isolated directory (it drags in ~5 GB of NVIDIA wheels, ~25 min on the sandbox proxy, CPU-only use is fine):
   `pip install --target /tmp/torchenv torch pyyaml tqdm` then `PYTHONPATH=/tmp/torchenv python3 -m pytest -q -m torch`. Without it, torch tests `importorskip` and run in CI. Long training runs belong on a laptop or Colab/Kaggle.
-- PyPI and `raw.githubusercontent.com` are reachable.
+- PyPI and `raw.githubusercontent.com` are reachable. 4 CPUs / 15 GB RAM: use `--workers` and `OPENBLAS_NUM_THREADS=1` for long runs; foreground `sleep` is blocked (use background jobs).
 - GitHub operations go through the MCP GitHub tools, not `gh`.
 
-## Layout (target; see docs/plan/README.md §4)
+## Layout (see docs/plan/README.md §4)
 
-`src/cellauto/{engines,catalog,nca,analysis,inference,learnability,contract,export}` · `models/nca/` · `assets/nca/` · `content/` · `results/` · `web/public/data/` (generated, committed) · `experiments/` (archived legacy, not linted) · `docs/{plan,ALGORITHMS.md,DATA_CONTRACT.md,REPORT.md}`
+`src/cellauto/{engines,catalog,nca,analysis,inference,contract,export}` (+ `learnability/` in P13) · `models/nca/` · `assets/nca/` · `content/` · `results/` · `web/public/data/` (generated, committed) · `experiments/` (archived legacy, not linted) · `docs/{plan,ALGORITHMS.md,DATA_CONTRACT.md,REPORT.md}`

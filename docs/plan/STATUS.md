@@ -6,19 +6,19 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 
 | Phase | Title | Tier | Status | Commit(s) | Notes |
 |---|---|---|---|---|---|
-| P00 | Hygiene, archive crypto, remove Rule Predictor | Must | ✅ | see log | Also removed the monorepo `packages/` + `tests/` from `main` (owner decision, see log) |
-| P01 | Scaffold, tooling, CI | Must | ✅ | see log | ruff `extend-exclude` uses `docs/plan` (not just `/reference`): ruff's formatter also formats the code blocks in the plan's `.md` files |
-| P02 | Elementary engine | Must | ✅ | see log | `OD_CA.py` removed |
-| P03 | Life-like engine, RLE, catalogs | Must | ✅ | see log | `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed |
-| P04 | Lenia | Should | ✅ | see log | `animals.json` downloaded once; the 3 presets are copied verbatim into `catalog/data/lenia_presets.json` |
-| P05 | NCA torch-free inference + manifest | Must | ✅ | see log | 25 models moved to `models/nca/`, `.npz` + `manifest.json` generated |
-| P06 | Renderer + CLI | Must | ✅ | see log | Only commands whose phase is done are registered; later phases add theirs |
-| P07 | Contract, export, fixtures, ALGORITHMS.md | Must | ✅ | see log | Frontend may start after this (zero-change after P12). `web/public/data/` committed (85 files, ~20 MB, mostly GIFs) |
-| P08 | NCA torch training port | Must | ✅ | see log | Torch tests **were run** in the sandbox (38 pass); see CLAUDE.md for the install recipe. `neural-cellular-automata/` removed |
-| P09 | ECA theory + behaviour atlas | Should | ✅ | see log | `results/eca_atlas.json` committed; `cellauto analyze eca-atlas` takes ~2 s |
-| P10 | Life-like theory + full rule-space atlas | Should | ✅ | see log | Full atlas run: 628 s with 3 workers (≈ 10.5 min); committed as the final cabin table (2.6 MB) |
-| P11 | Rule inference + ReLU compiler | Should | ✅ | see log | Study ran in 377 s on 4 workers; `results/inference_study.json` committed |
-| P12 | NCA rigorous evaluation | Should | ✅ | see log | Full protocol: 255 s on 4 workers (BLAS pinned to 1 thread); `results/nca_eval.json` committed. **The frontend can start now.** |
+| P00 | Hygiene, archive crypto, remove Rule Predictor | Must | ✅ | `79be39a` | Also removed the monorepo `packages/` + `tests/` from `main` (owner decision, see log) |
+| P01 | Scaffold, tooling, CI | Must | ✅ | `f968599` | ruff `extend-exclude` uses `docs/plan` (not just `/reference`): ruff's formatter also formats the code blocks in the plan's `.md` files |
+| P02 | Elementary engine | Must | ✅ | `91cfc3b` | `OD_CA.py` removed |
+| P03 | Life-like engine, RLE, catalogs | Must | ✅ | `673790f`, `139f2e2` | `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed |
+| P04 | Lenia | Should | ✅ | `68201f8` | `animals.json` downloaded once; the 3 presets are copied verbatim into `catalog/data/lenia_presets.json` |
+| P05 | NCA torch-free inference + manifest | Must | ✅ | `bc4f2de` | 25 models moved to `models/nca/`, `.npz` + `manifest.json` generated |
+| P06 | Renderer + CLI | Must | ✅ | `5381355` | Only commands whose phase is done are registered; later phases add theirs |
+| P07 | Contract, export, fixtures, ALGORITHMS.md | Must | ✅ | `79062cd`, `4ca92b4` | Frontend may start after this (zero-change after P12). `web/public/data/` committed (85 files, ~20 MB, mostly GIFs) |
+| P08 | NCA torch training port | Must | ✅ | `ec54ec9` | Torch tests **were run** in the sandbox (38 pass); see CLAUDE.md for the install recipe. `neural-cellular-automata/` removed |
+| P09 | ECA theory + behaviour atlas | Should | ✅ | `8865cf0` | `results/eca_atlas.json` committed; `cellauto analyze eca-atlas` takes ~2 s |
+| P10 | Life-like theory + full rule-space atlas | Should | ✅ | `0d43fd8` | Full atlas run: 628 s with 3 workers (≈ 10.5 min); committed as the final cabin table (2.6 MB) |
+| P11 | Rule inference + ReLU compiler | Should | ✅ | `2a4f2e6`, `dc2ca96` | Study ran in 377 s on 4 workers; `results/inference_study.json` committed |
+| P12 | NCA rigorous evaluation | Should | ✅ | `dc3bf6a` | Full protocol: 255 s on 4 workers (BLAS pinned to 1 thread); `results/nca_eval.json` committed. **The frontend can start now.** |
 | P13 | Learnability experiment | Could | ⬜ | | Needs torch |
 | P14 | NCA retraining | Could | ⬜ | | Needs a GPU (Colab/Kaggle) and an emoji download |
 | P15 | Docs, report, model cards | Must | ⬜ | | Run last; rerun after optional phases |
@@ -27,15 +27,55 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 
 - [x] D2: delete `Rule Predictor/` (done in P00)
 - [x] D3: archive crypto under `experiments/ca_crypto/` (done in P00)
-- [ ] D5: MIT license; confirm with collaborator Manan Shah
-- [ ] Attribution: was any of `neural-cellular-automata/src` adapted from another public repo? If yes, record the URL here: ______
-- [ ] Merge the planning branch into `main` (see HANDOFF.md §2)
+- [x] Merge the planning branch into `main`: done. `claude/zen-clarke-bey6eo` was merged earlier (PR #1) and the build-out branch `claude/keen-turing-np4r23` (P00–P12) was merged at the end of the 2026-10-14 session; start new sessions from `main`.
+- [ ] **D5: licence.** `pyproject.toml` says MIT, but there is no `LICENSE` file and the collaborator (Manan Shah) has not confirmed. P15 creates the file; confirm first.
+- [ ] **Attribution:** was any of the deleted `neural-cellular-automata/src` adapted from another public repo? (It is still in git history: `git show 4ca92b4:neural-cellular-automata/src/model.py`.) If yes, record the URL here and credit it in the README: ______
+- [ ] **Owner's call on GIF weight:** `web/public/data/` is ~22 MB, 17 MB of it a duplicate of the NCA GIFs in `assets/nca/animations/`. Fine for now (plan D6); revisit before the frontend is deployed.
 
 If the owner hasn't answered, proceed with the defaults and note it in the session log.
+
+## Where to pick up (read this first in a fresh session)
+
+State: **P00–P12 done and merged to `main`; all checks green** (ruff, mypy, 208 fast tests, 6 slow tests, 45 torch tests, `export-web --check`). The backend is frontend-complete except `learnability/results.json` (P13). From here the contract is **additive only**.
+
+Pick one (details and copy-paste prompts in `HANDOFF.md` §6):
+
+1. **Frontend** (recommended next; it needs nothing more from the backend): Vite + React + TypeScript in `web/`, reading `web/public/data/index.json`. Specs: `docs/ALGORITHMS.md` + `fixtures/`; contract: `docs/DATA_CONTRACT.md`. If something the UI needs is missing, stop and report it as a contract gap.
+2. **P15 docs/report** (Must): README hero images, `docs/REPORT.md`, `docs/ARCHITECTURE.md`, model cards, `ROADMAP.md`, `CITATION.cff`, `LICENSE` (after D5), fill `content/*.md`. **Use the measured numbers below, not the placeholders in the P15 file.** Re-run after P13/P14.
+3. **P13 learnability** (Could, needs torch, about an hour of CPU): `learnability/{models,experiment}.py`. Everything it needs exists: `inference/relu_compiler.compile_rule(LifeRule.parse("B3/S23"))` is the exact h = 4 solution (biases −2, −2.5, −3.5, −4; readout weights 2, −2, −2, 2; centre weight ½), `analysis/stats.{wilson_interval,bootstrap_ci}`, `engines/lifelike`. Wire it like `inference-study` (see the recipe in the 2026-10-14 wrap-up entry).
+4. **P14 retraining** (Could, needs a GPU): a Colab/Kaggle notebook around `cellauto nca train`. The training code and its `use_pool`, `grad_norm`, `lr_schedule` flags are ready; targets with real transparency still have to be downloaded (ask the owner if the network blocks it). Training variance is the biggest open scientific caveat of the NCA results.
+
+## Measured numbers (source of truth for README / REPORT; they differ from the P15 placeholders)
+
+| Claim | Measured | Where |
+|---|---|---|
+| Direction-aware vs isotropic perception | Sobel/Scharr MSE@200 = 1.5e-4 … 5.8e-4; Gaussian/Laplacian/mean 0.0095 … 0.047, i.e. **20–600× worse**, never below 0.005 | `results/nca_eval.json`, `content/nca.md` |
+| Hinge loss | MSE@200 0.034 … 0.052 (plateau) | same |
+| Damage-trained regeneration | **78.8 steps [71.0, 87.9] vs 192.7 [160.0, 232.0]** (≈ 2.4× faster; paired p < 1e-4, d = −1.1, 30 seeds), not "1.7×" | same |
+| Caveat that must stay | CIs cover inference randomness only; every configuration was trained once | same |
+| Exhaustive rule search | exact at any k; **8–20 s** per instance on 32×32 (7.8 s at k = 1 … 19.6 s at k = 4), not "3 s" | `results/inference_study.json` |
+| Gradient-descent rule learning | success per restart: k = 1 **100%** (convex), k = 2 **32%**, k = 3 19%, k = 4 8% (noise barely matters); best of 10 restarts: 100 / 90 / 50 / 20% | same |
+| ReLU compiler | Life = 4 hidden units; over all 2¹⁸ rules 0–17 units, mean exactly 12.5 | `inference/relu_examples.json` |
+| Mean field vs reality | Life: mean-field ρ* = 0.370, simulated 0.062 (127² torus, 3 seeds) | `results/lifelike_atlas/summary.json` |
+| Rule-space atlas | 131,072 rules; 4 clusters (72.8% noise-like, 13.2% die out, 13.9% freeze dense, 0.2% flashing); **no sharp edge-of-chaos transition** (activity and damage are an inverted U in λ, Spearman 0.08; λ vs final density 0.85) | `results/lifelike_atlas/summary.json`, `content/lifelike.md` |
+| ECA | 88 symmetry classes, 30 surjective rules, 6 reversible rules; unsupervised clusters put Wolfram classes III and IV together | `results/eca_atlas.json` |
+
+## Reproduce everything (commands and measured runtimes on 4 CPUs)
+
+```bash
+cellauto analyze eca-atlas                                            #   2 s
+cellauto analyze lifelike-atlas --workers 3                           # 628 s (resumable chunks in results/lifelike_atlas/chunks, git-ignored)
+OPENBLAS_NUM_THREADS=1 cellauto analyze nca-eval --workers 4          # 255 s
+PYTHONPATH=/tmp/torchenv cellauto analyze inference-study --workers 4 # 377 s (needs torch)
+cellauto export-web                                                   # then commit web/public/data/
+```
+Add `--quick` for CI-sized runs (written to the git-ignored `results/quick/`).
 
 ## Session log (newest first)
 
 Add one entry per session: date, branch, phases touched, what's left mid-phase, surprises.
+
+- **2026-10-14 wrap-up (branch `claude/keen-turing-np4r23`, merged into `main`).** One long session executed P00–P12 (17 commits, listed in the table above). **Final state:** `main` = P00–P12, 100 files in `web/public/data/`, `results/` holds `eca_atlas.json`, `lifelike_atlas/{atlas.bin,atlas.header.json,summary.json}`, `inference_study.json`, `nca_eval.json`. **Not done:** P13, P14, P15 and the frontend. **Method notes worth keeping:** (a) torch was installed with `pip install --target` (~25 min, ~5 GB); a new container will not have it, see CLAUDE.md for the recipe; (b) long analyses use a `ProcessPoolExecutor` with deterministic per-job seeds, so results do not depend on the worker count, and BLAS should be pinned to one thread when running several workers; (c) shared files (`cli.py`, `export/web.py`, `contract/{models,schema}.py`, `export/fixtures.py`) gain one block per phase, and each new dataset follows the same recipe: model in `contract/models.py` + entry in `contract/schema.TOP_LEVEL`, builder in `export/web._BUILDERS` (reads `results/*.json`, skips if absent), optional fixture in `export/fixtures.all_fixtures`, an `analyze` choice in `cli.py`, a test in `tests/export/test_export.py`, a row in `docs/DATA_CONTRACT.md`, then `cellauto export-web`. **Deviations from the phase files, each explained in its own entry below:** ruff excludes `docs/plan` (P01); a `bits` init parameter and the lowercase `o2u` default preset id in `engines.json` (P07); `DatasetRef.schema_path` is nullable and `--check` tolerates float noise in four fixtures (P07/P10/P11); the ECA feature RNG follows the reference script, not the plan text (P09); ECA features/atlas live in `analysis/eca_atlas.py` (P09).
 
 - **Docs sweep after P12.** Root `README.md` rewritten (it described the deleted `packages/` monorepo); `CLAUDE.md` "current state" and `HANDOFF.md` §1 updated; the dead `neural-cellular-automata` entry is gone from every doc. **Process note:** P08–P10 (and part of P12) were developed together while waiting for torch and the atlas run, then split into one commit per phase by peeling later phases' edits off the shared files and validating each commit on a clean worktree (lint, types, tests, `export-web --check`, torch tests); the final tree is byte-identical to the combined work. **Still open for the owner:** D5 (licence confirmation with Manan Shah; no `LICENSE` file yet, P15), the attribution question about `neural-cellular-automata/src`, D3 is done, merging this branch into `main`. **Frontend kickoff** prompt is in HANDOFF §6.
 
