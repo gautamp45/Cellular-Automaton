@@ -60,6 +60,7 @@ SCHEMA_OF = {
     "elementary/atlas.json": "eca_atlas",
     "lifelike/atlas_summary.json": "lifelike_atlas_meta",
     "inference/relu_examples.json": "relu_examples",
+    "inference/study.json": "inference_study",
     "lifelike/rules.json": "lifelike_rules",
     "lifelike/patterns.json": "lifelike_patterns",
     "lenia/presets.json": "lenia_presets",
@@ -213,6 +214,22 @@ def test_inference_fixture_reproduces(files: dict[str, bytes]) -> None:
     assert len(glider["unidentified"]) > 0
     noisy = next(c for c in fx["cases"] if c.get("eps") == 0.05)
     assert noisy["map_rule"] == "B3/S23"
+
+
+def test_inference_study_dataset(files: dict[str, bytes]) -> None:
+    study = json.loads(files["inference/study.json"])
+    src = json.loads((ROOT / "results" / "inference_study.json").read_text())["study"]
+    assert study == src
+    assert len(study["rules"]) == 20 and {r["cluster"] for r in study["rules"]} == {0, 1, 2, 3}
+    cells = {(c["k"], c["eps"]): c for c in study["cells"]}
+    assert len(cells) == 12
+    # k = 1 is convex: every restart succeeds; deeper rollouts are non-convex and much worse
+    assert cells[(1, 0.0)]["success_rate"] == 1.0
+    assert cells[(4, 0.0)]["success_rate"] < cells[(2, 0.0)]["success_rate"] < 0.5
+    ref = next(
+        d for d in json.loads(files["index.json"])["datasets"] if d["id"] == "inference_study"
+    )
+    assert ref["produced_by"] == "cellauto analyze inference-study"
 
 
 def test_relu_examples(files: dict[str, bytes]) -> None:

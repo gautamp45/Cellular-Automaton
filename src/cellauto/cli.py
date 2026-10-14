@@ -160,7 +160,9 @@ def _cmd_export_web(a: argparse.Namespace) -> int:
 
 def _cmd_analyze(a: argparse.Namespace) -> int:
     import json
+    import time
 
+    from cellauto.analysis.eca_atlas import run_info
     from cellauto.nca.checkpoints import find_repo_root
 
     root = find_repo_root()
@@ -175,6 +177,17 @@ def _cmd_analyze(a: argparse.Namespace) -> int:
         meta = build_results(root / "results", quick=a.quick, workers=a.workers)["meta"]
         print(f"wrote results/{'quick/' if a.quick else ''}lifelike_atlas ({meta['runtime_s']} s)")
         return 0
+    elif a.what == "inference-study":
+        try:
+            from cellauto.inference import differentiable as diff
+        except ImportError:
+            raise CliError('this analysis needs PyTorch: pip install -e ".[train]"') from None
+
+        t0 = time.perf_counter()
+        study = diff.run_study(root / "results", diff.QUICK if a.quick else diff.DEFAULT, a.workers)
+        result = {"study": study, "meta": {**run_info(), "workers": a.workers, "quick": a.quick,
+                  "runtime_s": round(time.perf_counter() - t0, 2)}}  # fmt: skip
+        out = root / "results" / ("quick" if a.quick else "") / "inference_study.json"
     else:  # pragma: no cover - argparse restricts the choices
         raise CliError(f"unknown analysis {a.what!r}")
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -273,8 +286,10 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--check", action="store_true", help="exit 1 if the output is stale")
 
     an = add("analyze", "run an analysis and write results/*.json", _cmd_analyze)
-    an.add_argument("what", choices=["eca-atlas", "lifelike-atlas"])
-    an.add_argument("--workers", type=int, default=None, help="processes for lifelike-atlas")
+    an.add_argument("what", choices=["eca-atlas", "lifelike-atlas", "inference-study"])
+    an.add_argument(
+        "--workers", type=int, default=None, help="processes (lifelike-atlas, inference-study)"
+    )
     an.add_argument(
         "--quick", action="store_true", help="small protocol, written to results/quick/"
     )

@@ -421,3 +421,59 @@ class ReluExamples(_Model):
     examples: list[ReluExample]
     histogram: list[int]  # histogram[u] = number of the 2^18 rules needing u hidden units
     mean_hidden_units: float
+
+
+class InferenceProtocol(_Model):
+    n_rules: int
+    grid: int
+    density: float
+    ks: list[int]
+    eps_values: list[float]
+    restarts: int
+    steps: int
+    lr: float
+    seed: int
+    optimizer: str
+    init: str
+
+
+class InferenceRule(_Model):
+    code: int
+    row: int  # atlas row (code = 2 * row)
+    cluster: int  # life-like atlas cluster the rule was drawn from
+    rulestring: str
+
+
+class InferenceCell(_Model):
+    """Gradient descent at one (k, eps): success rates over instances x restarts."""
+
+    k: int
+    eps: float
+    n_instances: int
+    n_trials: int  # instances x restarts
+    success_rate: float  # restarts whose MAP rule reproduces the clean x_k
+    success_ci_low: float  # Wilson 95%
+    success_ci_high: float
+    best_of_restarts_rate: float  # instances where at least one restart succeeded
+    best_ci_low: float
+    best_ci_high: float
+    bit_error_rate: float  # over the table bits the data identify
+    fit_seconds_mean: float  # all restarts together
+    exhaustive_seconds_mean: float  # the exhaustive search over all 2^18 rules, same instance
+    identifiable_bits_mean: float
+
+
+class InferenceCluster(_Model):
+    cluster: int
+    k: int
+    n_instances: int
+    success_rate: float  # noise-free
+    identifiable_bits_mean: float
+
+
+class InferenceStudy(_Model):
+    format_version: Literal[1]
+    protocol: InferenceProtocol
+    rules: list[InferenceRule]
+    cells: list[InferenceCell]
+    by_cluster: list[InferenceCluster]

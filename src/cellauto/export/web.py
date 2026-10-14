@@ -258,6 +258,19 @@ def _inference(b: _Builder) -> None:
     )  # fmt: skip
 
 
+def _inference_study(b: _Builder) -> None:
+    path = b.repo_root / "results" / "inference_study.json"
+    if not path.is_file():
+        return
+    b.add_json(
+        "inference/study.json", "inference_study", "inference_study",
+        json.loads(path.read_text())["study"],
+        "Rule-inference study",
+        "Gradient descent vs exhaustive search: success versus rollout length and noise.",
+        produced_by="cellauto analyze inference-study",
+    )  # fmt: skip
+
+
 def _lenia(b: _Builder) -> None:
     presets = []
     for p in lenia_presets():
@@ -392,6 +405,7 @@ _BUILDERS: list[Callable[[_Builder], None]] = [
     _lifelike,
     _lifelike_atlas,
     _inference,
+    _inference_study,
     _lenia,
     _nca,
     _fixtures,
