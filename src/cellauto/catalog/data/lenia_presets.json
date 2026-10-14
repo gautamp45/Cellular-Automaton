@@ -1,0 +1,87 @@
+{
+  "license": "Presets O2u, O2ui, O2b are copied verbatim from Chakazul/Lenia (MIT License, Copyright (c) 2019 Bert Wang-Chak Chan).",
+  "source": "https://github.com/Chakazul/Lenia/blob/master/Python/animals.json",
+  "presets": [
+    {
+      "id": "o2u",
+      "name": "Orbium unicaudatus",
+      "code": "O2u",
+      "params": {
+        "R": 13,
+        "T": 10,
+        "mu": 0.15,
+        "sigma": 0.015,
+        "peaks": [
+          1.0
+        ]
+      },
+      "growth": "gaussian",
+      "kernel_core": "exp_bump",
+      "cells_rle": "7.MD6.qL$6.pKqEqFURpApBRAqQ$5.VqTrSsBrOpXpWpTpWpUpCrQ$4.CQrQsTsWsApITNPpGqGvL$3.IpIpWrOsGsBqXpJ4.LsFrL$A.DpKpSpJpDqOqUqSqE5.ExD$qL.pBpTT2.qCrGrVrWqM5.sTpP$.pGpWpD3.qUsMtItQtJ6.tL$.uFqGH3.pXtOuR2vFsK5.sM$.tUqL4.GuNwAwVxBwNpC4.qXpA$2.uH5.vBxGyEyMyHtW4.qIpL$2.wV5.tIyG3yOxQqW2.FqHpJ$2.tUS4.rM2yOyJyOyHtVpPMpFqNV$2.HsR4.pUxAyOxLxDxEuVrMqBqGqKJ$3.sLpE3.pEuNxHwRwGvUuLsHrCqTpR$3.TrMS2.pFsLvDvPvEuPtNsGrGqIP$4.pRqRpNpFpTrNtGtVtStGsMrNqNpF$5.pMqKqLqRrIsCsLsIrTrFqJpHE$6.RpSqJqPqVqWqRqKpRXE$8.OpBpIpJpFTK!",
+      "width": 20,
+      "height": 20,
+      "source": "https://github.com/Chakazul/Lenia/blob/master/Python/animals.json"
+    },
+    {
+      "id": "o2ui",
+      "name": "Orbium unicaudatus ignis",
+      "code": "O2ui",
+      "params": {
+        "R": 13,
+        "T": 10,
+        "mu": 0.11,
+        "sigma": 0.012,
+        "peaks": [
+          1.0
+        ]
+      },
+      "growth": "gaussian",
+      "kernel_core": "exp_bump",
+      "cells_rle": "8.DPXUD$5.pFqMqRpTpW2qBqDpXB$4.HrHsLrVqFpTpJXpCpSqMsL$3.UpWrSrAqCpKQA3.SqPsV$2.pBqAqEqApSpIpN6.CsS$.EpWqApIQpBqVrNqL7.wO$.pIqCXB2.rP2sUqF6.U$.pXpR4.sEuBuKtW7.uJ$PqHpA4.rTuTvNvMtL6.qR$DqSO5.vDwLwUwI7.pN$.tHK5.uUxBxUxWtF6.qK$.vCO5.LxM2yOxT6.qG$2.pN6.uE3yOsN4.SpU$2.wU6.CxQ2yOvWqJ3.pSpK$2.H7.tU2xTwSuGrGpUqAqER$3.tL6.rLwDwPwBvAtGrQqUpQ$3.CqS5.qXuTvHuJtJsJrFpWR$4.pJqC3.IrJtNtJsFrEqKpOS$5.pCqGpNpMqErKrXrIqHpNpDPC$6.HpNqAqGqJqEpOpDPKA$8.EPSQNIC!",
+      "width": 20,
+      "height": 21,
+      "source": "https://github.com/Chakazul/Lenia/blob/master/Python/animals.json"
+    },
+    {
+      "id": "o2b",
+      "name": "Orbium bicaudatus",
+      "code": "O2b",
+      "params": {
+        "R": 13,
+        "T": 10,
+        "mu": 0.15,
+        "sigma": 0.014,
+        "peaks": [
+          1.0
+        ]
+      },
+      "growth": "gaussian",
+      "kernel_core": "exp_bump",
+      "cells_rle": "13.pK$14.qV$6.VpA.MpEpKpITqV$4.BpPpNrIrEqDpWpOpLpUqNvT$4.IqRrNsPsKqHJ3.GqOuC$4.TrLsTrPrLpS6.uUD$3.SpWqNrBqLpRqPqE6.vA$2.FpTpMLpHqPqHrVsPrS5.qUqA$K.pCpRG.ErFsRsVuSuPqN4.CrR$pA.pTU3.rWuBuRvXwTwKpF4.rCH$.tPqHH3.qFvAwUwVyJyKwNL2.DqLR$.pGsGA4.vPxSyDxE2yOuHS.XqJT$2.xIE4.sCyHyOvLvRyFxCsGpVpXqGP$2.VsU4.DxQyOvVuSwDwQuBrMqSqCF$3.vG5.tEyKwVvIvKvMtVrXqTpM$4.sU4.qFvDwMvNuUuDsUrKqDO$4.qCrDJ2.pPsKuGuHtOsQrNqKpC$5.pTqTpVpNqFrJsGsKrVrDqFpFD$6.QqCqJqPqVqXqRqHpOTC$8.LWpFpEXPG!",
+      "width": 20,
+      "height": 20,
+      "source": "https://github.com/Chakazul/Lenia/blob/master/Python/animals.json"
+    },
+    {
+      "id": "life_as_lenia",
+      "name": "Life as a Lenia",
+      "code": "life_as_lenia",
+      "description": "Conway's Life expressed in Lenia terms: 3x3 neighbour-count kernel (centre 0, not normalised), T = 1, step growth (+1 at 3, 0 at 2, else -1). mu and sigma are unused for step growth.",
+      "params": {
+        "R": 1,
+        "T": 1.0,
+        "mu": 0.0,
+        "sigma": 1.0,
+        "peaks": [
+          1.0
+        ]
+      },
+      "growth": "life_step",
+      "kernel_core": "life_box",
+      "cells_rle": null,
+      "width": null,
+      "height": null,
+      "source": "Chan, Lenia: Biology of Artificial Life (2019); Life as a special case of Lenia"
+    }
+  ]
+}

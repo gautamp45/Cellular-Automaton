@@ -1,47 +1,22 @@
-# Python bytecode
 __pycache__/
-**/__pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
-
-# Distribution / packaging
 *.egg-info/
-dist/
-build/
-.eggs/
-
-# Virtual environments
-venv/
 .venv/
-env/
-.env
-
-# Model weights
-*.pt
-*.pth
-
-# Data / outputs
-**/data/*.png
-**/data/*.npz
-**/animations/
-
-# Jupyter
-.ipynb_checkpoints/
-**/.ipynb_checkpoints/
-
-# macOS
+venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+logs/
+runs/
 .DS_Store
-**/.DS_Store
-.AppleDouble
-
-# IDEs
 .vscode/
 .idea/
-*.swp
-*.swo
+node_modules/
+web/dist/
 
-# Logs
-logs/
-*.log
+# quick (CI-sized) analysis runs are not committed
+results/quick/
+results/lifelike_atlas/chunks/

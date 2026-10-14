@@ -1,0 +1,246 @@
+[
+  {
+    "id": "life",
+    "name": "Conway's Game of Life",
+    "rulestring": "B3/S23",
+    "description": "The classic rule: Turing-complete, with gliders, guns and oscillators.",
+    "tags": [
+      "classic",
+      "universal"
+    ]
+  },
+  {
+    "id": "highlife",
+    "name": "HighLife",
+    "rulestring": "B36/S23",
+    "description": "Life plus birth on 6 neighbours; has a small self-replicating pattern.",
+    "tags": [
+      "replicator"
+    ]
+  },
+  {
+    "id": "day_and_night",
+    "name": "Day & Night",
+    "rulestring": "B3678/S34678",
+    "description": "Symmetric under swapping live and dead cells (self-dual).",
+    "tags": [
+      "self-dual"
+    ]
+  },
+  {
+    "id": "seeds",
+    "name": "Seeds",
+    "rulestring": "B2/S",
+    "description": "Every live cell dies each step; patterns explode outwards.",
+    "tags": [
+      "explosive"
+    ]
+  },
+  {
+    "id": "life_without_death",
+    "name": "Life without Death",
+    "rulestring": "B3/S012345678",
+    "description": "Live cells never die, so patterns only grow, producing ladders.",
+    "tags": [
+      "growth"
+    ]
+  },
+  {
+    "id": "replicator",
+    "name": "Replicator",
+    "rulestring": "B1357/S1357",
+    "description": "Odd neighbour counts only; every pattern copies itself (linear over GF(2)).",
+    "tags": [
+      "replicator",
+      "additive"
+    ]
+  },
+  {
+    "id": "maze",
+    "name": "Maze",
+    "rulestring": "B3/S12345",
+    "description": "Grows labyrinth-like walls from a random start.",
+    "tags": [
+      "maze"
+    ]
+  },
+  {
+    "id": "mazectric",
+    "name": "Mazectric",
+    "rulestring": "B3/S1234",
+    "description": "Maze variant that produces longer, straighter corridors.",
+    "tags": [
+      "maze"
+    ]
+  },
+  {
+    "id": "coral",
+    "name": "Coral",
+    "rulestring": "B3/S45678",
+    "description": "Slow-growing, coral-like branching structures.",
+    "tags": [
+      "growth"
+    ]
+  },
+  {
+    "id": "two_by_two",
+    "name": "2x2",
+    "rulestring": "B36/S125",
+    "description": "Rule where 2x2 blocks play the role of stable building blocks.",
+    "tags": [
+      "blocks"
+    ]
+  },
+  {
+    "id": "life_34",
+    "name": "34 Life",
+    "rulestring": "B34/S34",
+    "description": "Life variant, famous for being unstable and explosive.",
+    "tags": [
+      "explosive"
+    ]
+  },
+  {
+    "id": "serviettes",
+    "name": "Serviettes",
+    "rulestring": "B234/S",
+    "description": "No cell survives; patterns grow as intricate lace-like fabrics.",
+    "tags": [
+      "explosive"
+    ]
+  },
+  {
+    "id": "flock",
+    "name": "Flock",
+    "rulestring": "B3/S12",
+    "description": "Life's birth rule with survival on only one or two neighbours.",
+    "tags": []
+  },
+  {
+    "id": "antilife",
+    "name": "Anti-Life",
+    "rulestring": "B0123478/S01234678",
+    "description": "The dual of Life (live and dead swapped); a B0 rule, so it strobes.",
+    "tags": [
+      "b0",
+      "dual-of-life"
+    ]
+  },
+  {
+    "id": "diamoeba",
+    "name": "Diamoeba",
+    "rulestring": "B35678/S5678",
+    "description": "Forms diamond-shaped amoeba-like blobs.",
+    "tags": [
+      "blobs"
+    ]
+  },
+  {
+    "id": "morley",
+    "name": "Morley",
+    "rulestring": "B368/S245",
+    "description": "Also called Move; supports many spaceships and puffers.",
+    "tags": [
+      "spaceships"
+    ]
+  },
+  {
+    "id": "anneal",
+    "name": "Anneal",
+    "rulestring": "B4678/S35678",
+    "description": "Smooths noisy regions into blobs, like annealing.",
+    "tags": [
+      "smoothing"
+    ]
+  },
+  {
+    "id": "gnarl",
+    "name": "Gnarl",
+    "rulestring": "B1/S1",
+    "description": "Birth and survival both on exactly one neighbour; a single cell grows an intricate, gnarled pattern.",
+    "tags": [
+      "fractal"
+    ]
+  },
+  {
+    "id": "long_life",
+    "name": "Long Life",
+    "rulestring": "B345/S5",
+    "description": "Has very long-period oscillators.",
+    "tags": [
+      "oscillators"
+    ]
+  },
+  {
+    "id": "amoeba",
+    "name": "Amoeba",
+    "rulestring": "B357/S1358",
+    "description": "Amoeba-like blobs that wander and merge.",
+    "tags": [
+      "blobs"
+    ]
+  },
+  {
+    "id": "assimilation",
+    "name": "Assimilation",
+    "rulestring": "B345/S4567",
+    "description": "Smooth, blob-forming rule where structures absorb their neighbours.",
+    "tags": [
+      "blobs"
+    ]
+  },
+  {
+    "id": "coagulations",
+    "name": "Coagulations",
+    "rulestring": "B378/S235678",
+    "description": "Chaotic rule that coagulates into thick, solid clumps.",
+    "tags": [
+      "blobs"
+    ]
+  },
+  {
+    "id": "walled_cities",
+    "name": "Walled Cities",
+    "rulestring": "B45678/S2345",
+    "description": "Grows walled, city-like enclosures.",
+    "tags": [
+      "maze"
+    ]
+  },
+  {
+    "id": "stains",
+    "name": "Stains",
+    "rulestring": "B3678/S235678",
+    "description": "Stable stain-like regions spread across the grid.",
+    "tags": [
+      "blobs"
+    ]
+  },
+  {
+    "id": "dotlife",
+    "name": "DotLife",
+    "rulestring": "B3/S023",
+    "description": "Life variant where isolated live cells also survive.",
+    "tags": [
+      "life-like"
+    ]
+  },
+  {
+    "id": "pseudo_life",
+    "name": "Pseudo Life",
+    "rulestring": "B357/S238",
+    "description": "Behaves much like Life without being Life.",
+    "tags": [
+      "life-like"
+    ]
+  },
+  {
+    "id": "live_free_or_die",
+    "name": "Live Free or Die",
+    "rulestring": "B2/S0",
+    "description": "Lone cells survive and 2-neighbour cells are born; supports gliders.",
+    "tags": [
+      "spaceships"
+    ]
+  }
+]

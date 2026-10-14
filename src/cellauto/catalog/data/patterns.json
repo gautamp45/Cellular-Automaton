@@ -1,0 +1,107 @@
+[
+  {
+    "id": "block",
+    "name": "Block",
+    "category": "still_life",
+    "rule": "B3/S23",
+    "rle": "2o$2o!",
+    "description": "The smallest still life: a 2x2 square that never changes."
+  },
+  {
+    "id": "beehive",
+    "name": "Beehive",
+    "category": "still_life",
+    "rule": "B3/S23",
+    "rle": "b2o$o2bo$b2o!",
+    "description": "A six-cell still life, the second most common in random soups."
+  },
+  {
+    "id": "blinker",
+    "name": "Blinker",
+    "category": "oscillator",
+    "period": 2,
+    "rule": "B3/S23",
+    "rle": "3o!",
+    "description": "Three cells in a row flipping between horizontal and vertical."
+  },
+  {
+    "id": "toad",
+    "name": "Toad",
+    "category": "oscillator",
+    "period": 2,
+    "rule": "B3/S23",
+    "rle": "b3o$3o!",
+    "description": "Two offset rows of three cells, oscillating with period 2."
+  },
+  {
+    "id": "beacon",
+    "name": "Beacon",
+    "category": "oscillator",
+    "period": 2,
+    "rule": "B3/S23",
+    "rle": "2o$2o$2b2o$2b2o!",
+    "description": "Two diagonal blocks whose touching corners blink on and off."
+  },
+  {
+    "id": "pulsar",
+    "name": "Pulsar",
+    "category": "oscillator",
+    "period": 3,
+    "rule": "B3/S23",
+    "rle": "2b3o3b3o2b2$o4bobo4bo$o4bobo4bo$o4bobo4bo$2b3o3b3o2b2$2b3o3b3o2b$o4bobo4bo$o4bobo4bo$o4bobo4bo2$2b3o3b3o!",
+    "description": "A 48-cell period-3 oscillator with four-fold symmetry, the most common period-3 oscillator."
+  },
+  {
+    "id": "glider",
+    "name": "Glider",
+    "category": "spaceship",
+    "period": 4,
+    "velocity": "c/4 diagonal",
+    "rule": "B3/S23",
+    "rle": "bo$2bo$3o!",
+    "description": "The smallest spaceship: it moves one cell diagonally every four generations."
+  },
+  {
+    "id": "lwss",
+    "name": "Lightweight spaceship",
+    "category": "spaceship",
+    "period": 4,
+    "velocity": "c/2 orthogonal",
+    "rule": "B3/S23",
+    "rle": "bo2bo$o4b$o3bo$4o!",
+    "description": "A 9-cell spaceship moving two cells horizontally every four generations."
+  },
+  {
+    "id": "r_pentomino",
+    "name": "R-pentomino",
+    "category": "methuselah",
+    "rule": "B3/S23",
+    "rle": "b2o$2o$bo!",
+    "description": "Five cells that evolve chaotically for 1103 generations before stabilising."
+  },
+  {
+    "id": "acorn",
+    "name": "Acorn",
+    "category": "methuselah",
+    "rule": "B3/S23",
+    "rle": "bo5b$3bo3b$2o2b3o!",
+    "description": "Seven cells that take 5206 generations to stabilise."
+  },
+  {
+    "id": "diehard",
+    "name": "Diehard",
+    "category": "methuselah",
+    "rule": "B3/S23",
+    "rle": "6bob$2o6b$bo3b3o!",
+    "description": "Seven cells that vanish completely after 130 generations."
+  },
+  {
+    "id": "gosper_glider_gun",
+    "name": "Gosper glider gun",
+    "category": "gun",
+    "period": 30,
+    "rule": "B3/S23",
+    "rle": "24bo$22bobo$12b2o6b2o12b2o$11bo3bo4b2o12b2o$2o8bo5bo3b2o$2o8bo3bob2o4bobo$10bo5bo7bo$11bo3bo$12b2o!",
+    "description": "The first known finite pattern with unbounded growth: it emits a glider every 30 generations."
+  }
+]

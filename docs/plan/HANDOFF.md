@@ -8,23 +8,16 @@ This is for whoever (human or AI) continues this work in a new session with no m
 
 - **Goal:** turn this repo into the `cellauto` package plus a static data backend (`web/public/data/`) for a frontend showcasing 1D, 2D (Life + variants), Lenia and Neural CA, with math/ML analysis. The frontend comes later and must not need backend changes.
 - **Plan:** `docs/plan/README.md` (overview, principles, phase table, frontend-completeness matrix, rules) plus one file per phase, `P00`–`P15`. The audit of the original code is in `AUDIT.md`.
-- **Progress:** `docs/plan/STATUS.md`. As of the planning session, **no production code has changed**. The repo is still the original scripts, and the next phase is **P00**.
+- **Progress:** `docs/plan/STATUS.md`. P00–P12 are done and pushed; open phases are P13, P14 and P15. The frontend can start (§6).
 - **Evidence:** `docs/plan/reference/` has the scripts that produced every "verified" number.
 
 ## 2. Branches (read before your first git command)
 
-The plan was written on branch `claude/zen-clarke-bey6eo`. A fresh cloud session is usually given a **new** branch created from `main`. If `main` doesn't contain `docs/plan/`, the new session won't see the plan.
+**State after the 2026-10-14 session:** `main` contains the plan (`claude/zen-clarke-bey6eo`, PR #1) **and** the whole build-out P00–P12 (`claude/keen-turing-np4r23`, merged at the end of that session). A fresh cloud session gets a new branch created from `main`, so it starts with everything; there is nothing to merge first. Sanity check: `ls docs/plan/STATUS.md src/cellauto web/public/data/index.json`.
 
-**Preferred:** before the next session, merge `claude/zen-clarke-bey6eo` into `main` (open a PR on GitHub and merge it). Every later session then starts from a branch that already has the plan. After each session, merge that session's branch the same way, so the next one starts from the latest work.
+**If your branch somehow lacks `docs/plan/` or the code** (for example it was created from an old commit), merge `main` into it: `git fetch origin main && git merge --no-edit origin/main`, then check `STATUS.md`, which is the source of truth for what is done.
 
-**If it isn't merged yet,** the session must pull the planning branch into its designated branch first:
-```bash
-git fetch origin claude/zen-clarke-bey6eo
-git merge --no-edit origin/claude/zen-clarke-bey6eo   # brings docs/plan, CLAUDE.md, .claude/
-```
-The same applies to work from earlier build sessions that hasn't been merged: fetch and merge the previous session's branch (its name is in the STATUS session log). **Check `STATUS.md` after merging**; it's the source of truth for what's done.
-
-Never force-push or rewrite history on a branch someone else has pushed to.
+**After each session**, merge that session's branch into `main` (a PR merged with a merge commit keeps the per-phase history) so the next session starts from the latest work. Never force-push or rewrite history on a branch someone else has pushed to.
 
 ## 3. Environment facts learned the hard way (cloud container, Oct 2026)
 
@@ -33,10 +26,14 @@ Never force-push or rewrite history on a branch someone else has pushed to.
 | System Python is 3.13 and pip installs to the system (not externally managed). numpy 2.x and Pillow 12 are preinstalled. | `pip install -e ".[dev]"` works without a venv. |
 | `/root/.local/bin/{pytest,mypy,ruff}` are **uv-tool shims with their own interpreter**, first on PATH. | Bare `pytest` **cannot import `cellauto`**. The SessionStart hook prepends `/usr/local/bin` via `$CLAUDE_ENV_FILE`. If in doubt, use `python3 -m pytest` and `python3 -m mypy`. |
 | `.claude/hooks/session-start.sh` runs at session start. It is a no-op until `pyproject.toml` exists (P01), then installs `cellauto[dev]` editable (~13 s). | After P01 you shouldn't need to install anything by hand. If you add an extra later, re-run `python3 -m pip install -e ".[dev]"`. |
-| `download.pytorch.org` is **blocked** (proxy 403). PyPI's `torch` wheel is the CUDA build: it downloads, but import fails without GBs of NVIDIA libs. | Don't try to install torch in the cloud sandbox. Torch tests use `pytest.importorskip("torch")`, and CI's `torch` job runs them. Run training locally or on Colab/Kaggle. |
+| `download.pytorch.org` is **blocked** (proxy 403). PyPI's `torch` wheel is the CUDA build and needs ~5 GB of NVIDIA wheels (installed automatically as dependencies). *Corrected in P08:* installing it into an isolated dir works and `import torch` runs on CPU. | `pip install --target /tmp/torchenv torch pyyaml tqdm` (~25 min), then `PYTHONPATH=/tmp/torchenv python3 -m pytest -q -m torch`. Torch tests use `pytest.importorskip("torch")`, so they skip without it, and CI's `torch` job runs them. Run long training locally or on Colab/Kaggle. |
 | PyPI and `raw.githubusercontent.com` are reachable. | P04's `animals.json` download works; Noto emoji for P14 should too. |
 | Pillow ≥ 10 removed `Image.ANTIALIAS`. | Use `Image.Resampling.LANCZOS` / `NEAREST`. |
 | GitHub access is via MCP tools, not `gh`. | For PRs, use the GitHub MCP tools. Create a PR only when the owner asks. |
+| The sandbox has **4 CPUs and 15 GB RAM**; there is a 30 GB disk allowance. | Long analyses use a `ProcessPoolExecutor` (`--workers N`). With several workers, pin BLAS: `OPENBLAS_NUM_THREADS=1`. Runtimes are listed in `STATUS.md` ("Reproduce everything"). |
+| `pip install --target` needs the full torch dependency set (~5 GB, ~25 min at ~2 MB/s). It is a one-off per container. | Start it in the background (`run_in_background`) at the beginning of a session that needs torch, and keep working meanwhile. |
+| Foreground `sleep` is blocked by the harness. | Wait with a background `until` loop or a Monitor, or do other work. |
+| `git worktree` works. | Handy to validate a commit on a clean tree: `git worktree add /tmp/wt <ref>`, then `PYTHONPATH=/tmp/wt/src python3 -m pytest` from inside it (the editable install otherwise points at the main checkout). |
 
 ## 4. How to run a build session
 
@@ -46,7 +43,7 @@ Never force-push or rewrite history on a branch someone else has pushed to.
 4. Run the checks: `ruff check . && ruff format --check . && mypy src && pytest -q` (from P01 on).
 5. Update `STATUS.md`: the phase row, commit SHAs, a session-log entry, and anything half-done (be specific: file, function, failing test).
 6. Commit with the phase's commit message and push to your designated branch.
-7. Prefer **one phase per session** for P07, P09–P12 (they're large). Small phases (P00–P02, P06) can share a session.
+7. Commit **each phase before starting the next**, even while a long job runs. (In the first build session P08–P10 piled up in shared files and had to be split apart afterwards.) New datasets follow the recipe in the STATUS wrap-up entry.
 
 **Stopping mid-phase is fine** if STATUS says exactly where you stopped. Commit work-in-progress only if checks pass. Otherwise describe the state in STATUS and leave it uncommitted only if the session continues; never leave a red commit on the branch.
 
@@ -61,17 +58,33 @@ Never force-push or rewrite history on a branch someone else has pushed to.
 - **Gosper gun RLE:** use exactly the string in P03 (`...12b2o6b2o12b2o...`). A one-character typo produces a pattern that silently decays.
 - **Exports must be deterministic:** no timestamps or run metadata in `web/public/data/`; those go in `results/*.json` meta.
 - **B0 rules** strobe. The atlas excludes them by design, and the B0-free set is *not* closed under duality.
+- **Float noise vs byte-exact checks:** `export-web --check` compares everything byte-for-byte except four float-heavy fixtures (`lenia`, `nca`, `lifelike_math`, `inference`), whose floats and tensors are compared within a tenth of their tolerance (`TOLERANT_PATHS` in `export/web.py`). Add any new float-valued fixture there, or CI will fail across numpy/BLAS builds.
+- **Never put non-deterministic values in `web/public/data/`:** runtimes, git SHAs and versions go in `results/*.json` under `meta`, which the exporter drops. `results/*.json` files hold `{"<dataset>": ..., "meta": ...}`.
+- **ECA feature RNG:** the 6 initial rows are *successive draws from one* `default_rng(seed)`, shared by all rules. Seeding each trial separately changes damage for rules 54/110/184 by 0.03–0.09 and breaks the verified values.
+- **Orbit consistency needs trials:** at 6 trials 12/264 orbit spreads exceed 0.05 (it is sampling noise, shrinking like 1/√n). The exact property is a slow test at 96 trials.
+- **Identifiability is data-dependent:** "exhaustive search finds exactly 1 rule" holds for the reference grid only (the test replays the reference RNG stream); other grids leave 1–15 extra consistent rules.
+- **NCA `run()` vs the evaluator:** `NumpyNCA.run(damage_at=...)` yields the *damaged* state at the damage step; the evaluation protocol records MSE just before damage in its own loop (`nca/evaluate.run_one`). Don't swap them.
+- **Duality identity is torus-only:** `1 − step(g, r) == step(1 − g, dual(r))` is exact with `wrap`; a dead border is not inversion-symmetric.
+- **Float summation order:** batch-size-dependent mean reductions differ at ~1e-16, so compare with a tolerance, not equality (atlas batch test).
+- **CI uses an older numpy than the sandbox (2.2.x vs 2.5.x) and Python 3.10/3.12.** Newer-vs-older numpy stubs differ in array-shape typing, so mypy can fail in CI while passing locally (it did: 5 errors, all "variable re-assigned an array of a different shape"). Before pushing, check against CI's numpy: `pip install --target /tmp/np22 numpy==2.2.6 && PYTHONPATH=/tmp/np22 python3 -m mypy src` (and the tests). Avoid re-using a variable name for arrays of different shapes; use a new name or `np.asarray(..., dtype=...)`.
+- **ruff scans Markdown code blocks:** `docs/plan` is excluded in `pyproject.toml`; keep it excluded.
 
 ## 6. Kickoff prompts (copy-paste into a new session)
 
-**Continue the build-out (default):**
-> Continue the cellauto build-out. First make sure this branch contains `docs/plan/` (if not, follow docs/plan/HANDOFF.md §2 to merge `claude/zen-clarke-bey6eo`). Then read CLAUDE.md and docs/plan/STATUS.md, execute the next unfinished phase exactly as its phase file specifies, run all checks, update STATUS.md, commit and push.
+**Frontend (recommended next; the backend is frontend-complete except P13's dataset):**
+> Read CLAUDE.md, docs/plan/STATUS.md ("Where to pick up"), docs/plan/README.md §5 (frontend-completeness matrix), docs/DATA_CONTRACT.md and docs/ALGORITHMS.md. Plan and build the frontend in `web/` (Vite + React + TypeScript, static, client-side simulation, Vitest parity tests against web/public/data/fixtures; generate TS types from web/public/data/schema/*.json). Don't modify anything under src/ or the export format. If something the UI needs is missing from the data, stop and report it as a contract gap.
 
-**A specific phase:**
-> Read CLAUDE.md and docs/plan/STATUS.md, then execute docs/plan/P0X-<name>.md only. Don't start the next phase. Update STATUS.md, commit and push.
+**Docs, report, model cards (P15):**
+> Read CLAUDE.md and docs/plan/STATUS.md, then execute docs/plan/P15-docs-report.md. Use the numbers in STATUS.md → "Measured numbers" rather than the placeholders in the phase file, keep the "inference stochasticity only" caveat for the NCA results, and ask me about the licence (D5) before adding a LICENSE file. Update STATUS.md, commit and push.
 
-**Frontend kickoff (after P07, ideally after P12):**
-> Read CLAUDE.md, docs/plan/README.md §5 (frontend-completeness matrix), docs/DATA_CONTRACT.md and docs/ALGORITHMS.md. Plan the frontend in `web/` (Vite + React + TypeScript, static, client-side simulation, Vitest parity tests against web/public/data/fixtures). Don't modify anything under src/ or the export format. If something the UI needs is missing from the data, stop and report it as a contract gap.
+**Learnability experiment (P13, needs torch):**
+> Read CLAUDE.md and docs/plan/STATUS.md, then execute docs/plan/P13-learnability.md only. Install torch as described in CLAUDE.md (start it in the background first), reuse inference/relu_compiler for the exact 4-unit Life network, and wire the dataset in the same way as inference-study. Update STATUS.md, commit and push.
+
+**NCA retraining (P14, needs a GPU):**
+> Read CLAUDE.md and docs/plan/STATUS.md, then prepare docs/plan/P14-nca-retraining.md for a Colab/Kaggle GPU run: the configs, the notebook wrapper and the target-download script. Do not start long CPU training in the sandbox. Tell me what I need to run and where to put the resulting checkpoints.
+
+**Any other single phase or fix:**
+> Read CLAUDE.md and docs/plan/STATUS.md, then <describe the task>. Don't start anything else. Update STATUS.md and any doc whose subject changed, commit and push.
 
 ## 7. Who to ask
 
