@@ -13,7 +13,7 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 | P04 | Lenia | Should | ✅ | see log | `animals.json` downloaded once; the 3 presets are copied verbatim into `catalog/data/lenia_presets.json` |
 | P05 | NCA torch-free inference + manifest | Must | ✅ | see log | 25 models moved to `models/nca/`, `.npz` + `manifest.json` generated |
 | P06 | Renderer + CLI | Must | ✅ | see log | Only commands whose phase is done are registered; later phases add theirs |
-| P07 | Contract, export, fixtures, ALGORITHMS.md | Must | ⬜ | | Frontend may start after this (zero-change after P12) |
+| P07 | Contract, export, fixtures, ALGORITHMS.md | Must | ✅ | see log | Frontend may start after this (zero-change after P12). `web/public/data/` committed (85 files, ~20 MB, mostly GIFs) |
 | P08 | NCA torch training port | Must | ⬜ | | Torch not installable in cloud sandbox; torch tests skip locally, CI runs them |
 | P09 | ECA theory + behaviour atlas | Should | ⬜ | | |
 | P10 | Life-like theory + full rule-space atlas | Should | ⬜ | | Full atlas ≈ 40 min CPU; chunked and resumable |
@@ -36,6 +36,17 @@ If the owner hasn't answered, proceed with the defaults and note it in the sessi
 ## Session log (newest first)
 
 Add one entry per session: date, branch, phases touched, what's left mid-phase, surprises.
+
+- **P07 done** (two commits: contract, then export). New: `contract/{models,schema}.py`, `export/{binary,content,engines,fixtures,web}.py`, `content/*.md` (8 pages; short real text, P15 expands), `docs/ALGORITHMS.md` (`#eca #lifelike #rle #rule-code #lenia #nca`), `docs/DATA_CONTRACT.md` (dataset table, versioning rule, fixture semantics, cabin format + JS reader), CLI `export-web [--out] [--check]`, CI step `cellauto export-web --check`, generated `web/public/data/` (85 files). 123 tests pass. **Design decisions / deviations from the phase file (all additive or clarifying; the frontend should know them):**
+  1. `build_export()` is pure and in-memory (`{path: bytes}`), so `--check` needs no temp dir; `export_web` also deletes stale files but refuses a non-empty dir without `index.json`.
+  2. `DatasetRef.schema_path` is `str | None` (None for png/gif/md assets); `index.json` lists *every* other file (including `schema/*` and assets) with sha256 + bytes, not just JSON datasets.
+  3. **`--check` is byte-exact except** `fixtures/lenia.json` and `fixtures/nca.json`, whose tensors are compared within `tolerance / 10` (and whose `index.json` entries are ignored), because FFT/BLAS builds differ in the last bits and CI runners differ from this sandbox. Everything else is byte-compared.
+  4. `engines.json`: added a `bits` bitstring parameter to `elementary` (the plan's `init = bits` mode had no input); the Lenia default preset is `o2u` (lowercase dataset id; Chan's code `O2u` is not a field of `LeniaPreset`).
+  5. `ColumnSpec.length` is the **byte** length; `write_cabin(path_stem, columns, specs, row_key)` writes `<stem>.header.json` + `<stem>.bin`; `specs` are `CabinColumn(dtype, description, unit)`; a uint16 column given floats is quantised, given ints it is stored exactly. P10 should reuse `encode_cabin`/`write_cabin`.
+  6. NCA fixture: `hidden_activations` are computed from the state **at** `hidden_state_step` (1), i.e. `relu(w1 @ perceive(x₁) + b1)`. Lenia fixture initial state is Orbium centred in 64×64 (origin recorded).
+  7. Catalog descriptions of the 207 non-reference elementary rules are the generic `"Elementary rule N."` (P09 can enrich); `.gitattributes` now has `web/public/data/** -text` and `content/** text eol=lf` so sha256s survive Windows checkouts.
+  8. RLE parser made strict: a run count directly before `!` is an error (matches the spec in ALGORITHMS.md).
+  **How later phases plug in:** add a builder function to `export/web._BUILDERS`, append the new model to `contract/schema.TOP_LEVEL`, then run `cellauto export-web` and commit the output; add the CLI subparser in `cli.build_parser()`. **The frontend may start now** (Pages for P09–P13 data wait for those phases; only additive changes from here). **Next: P08.**
 
 - **P06 done.** `render.py` (Pillow only; magma LUT generated once from matplotlib 3.11 in a throwaway dir and pasted as a hex constant; `gray` LUT inline; palettes dark/light/green) and `cli.py` with `elementary`, `life`, `lenia`, `nca run`, `list {elementary,lifelike,patterns,lenia,models}`; `main(argv) -> int`, user errors → stderr + exit 2 (argparse usage errors too, `--help` → 0). **Deliberately not registered yet** (no stubs): `nca train` (P08), `export-web [--check]` (P07), `analyze …` (P09–P12), `experiment learnability` (P13); each of those phases must add its subparser in `cli.build_parser()`. Notes: Pillow merges identical consecutive GIF frames (so a static pattern stores fewer frames than supplied; playback unchanged), documented on `save_gif`; `life` defaults to a 0.3-density random soup when neither `--pattern` nor `--random` is given; `lenia` centres the preset cells in the grid; `nca run` uses the manifest's `grid_size`/`padding`, spawns separate RNG streams (fire mask vs damage mask) from `--seed`, and includes the seed as frame 0 (`steps + 1` frames). `rgb_to_image` treats a leading axis of 3 as channels-first. **Next: P07.**
 

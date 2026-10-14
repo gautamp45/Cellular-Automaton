@@ -4,3 +4,6 @@
 *.bin binary
 *.gif binary
 *.png binary
+# Generated data and its sources must keep LF endings so that sha256s in index.json are stable.
+web/public/data/** -text
+content/** text eol=lf

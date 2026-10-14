@@ -39,6 +39,8 @@ def parse_rle(text: str) -> BinaryArray:
         if ch.isdigit():
             count += ch
             continue
+        if ch == "!" and count:
+            raise ValueError("RLE has a run count with no token before '!'")
         n = int(count) if count else 1
         count = ""
         if ch == "b":

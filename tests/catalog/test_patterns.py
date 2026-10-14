@@ -103,6 +103,8 @@ def test_rle_rejects() -> None:
     with pytest.raises(ValueError):
         parse_rle("3o")
     with pytest.raises(ValueError):
+        parse_rle("3o3!")
+    with pytest.raises(ValueError):
         place(get_pattern("pulsar"), (5, 5))
 
 

@@ -16,6 +16,7 @@ jobs:
       - run: ruff check . && ruff format --check .
       - run: mypy src
       - run: pytest -q
+      - run: cellauto export-web --check
   slow:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

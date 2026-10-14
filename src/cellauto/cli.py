@@ -6,6 +6,7 @@ import argparse
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 
@@ -121,6 +122,27 @@ def _cmd_nca_run(a: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_export_web(a: argparse.Namespace) -> int:
+    from cellauto.export import check_export, export_web
+    from cellauto.nca.checkpoints import find_repo_root
+
+    root = find_repo_root()
+    out = Path(a.out) if a.out else root / "web" / "public" / "data"
+    if a.check:
+        diffs = check_export(out, root)
+        for d in diffs:
+            print(d)
+        if diffs:
+            print(f"{len(diffs)} file(s) differ; run `cellauto export-web` to regenerate",
+                  file=sys.stderr)  # fmt: skip
+            return 1
+        print(f"{out} is up to date")
+        return 0
+    index = export_web(out, root)
+    print(f"wrote {len(index.datasets) + 1} files to {out}")
+    return 0
+
+
 def _cmd_list(a: argparse.Namespace) -> int:
     if a.what == "elementary":
         for r in elementary_rules():
@@ -202,6 +224,10 @@ def build_parser() -> argparse.ArgumentParser:
     nr.add_argument("--fps", type=int, default=20)
     nr.add_argument("--scale", type=int, default=8)
     nr.add_argument("--out", required=True)
+
+    ex = add("export-web", "write (or --check) the static data backend", _cmd_export_web)
+    ex.add_argument("--out", default=None, help="output dir (default: <repo>/web/public/data)")
+    ex.add_argument("--check", action="store_true", help="exit 1 if the output is stale")
 
     ls = add("list", "list catalog entries", _cmd_list)
     ls.add_argument("what", choices=["elementary", "lifelike", "patterns", "lenia", "models"])
