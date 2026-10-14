@@ -74,11 +74,11 @@ def _kernel64(params: LeniaParams, shape: tuple[int, int]) -> npt.NDArray[np.flo
     inside = (q > 0) & (q < 1)
     core = np.zeros_like(q)
     core[inside] = np.exp(4.0 - 1.0 / (q[inside] * (1.0 - q[inside])))
-    k = np.where(r < 1, np.asarray(params.peaks, dtype=np.float64)[idx] * core, 0.0)
-    total = k.sum()
+    ring = np.where(r < 1, np.asarray(params.peaks, dtype=np.float64)[idx] * core, 0.0)
+    total = ring.sum()
     if total <= 0:
         raise ValueError("kernel is identically zero (check peaks)")
-    return np.asarray(k / total, dtype=np.float64)
+    return np.asarray(ring / total, dtype=np.float64)
 
 
 def kernel(params: LeniaParams, shape: tuple[int, int]) -> FloatArray:

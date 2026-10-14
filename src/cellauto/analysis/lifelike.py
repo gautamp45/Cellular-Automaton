@@ -94,7 +94,7 @@ def fixed_points(rule: LifeRule) -> list[FixedPoint]:
     are kept; roots closer than 1e-3 are merged. ``|f'| < 1 - 1e-3`` is stable, ``> 1 + 1e-3`` is
     unstable and anything between is marginal (near-degenerate roots, e.g. Coral).
     """
-    grid = np.linspace(0.0, 1.0, 20001)
+    grid = np.asarray(np.linspace(0.0, 1.0, 20001), dtype=np.float64)
     g = _g(grid, rule)
     roots: list[float] = [float(grid[i]) for i in np.flatnonzero(g == 0.0)]
     for i in np.flatnonzero(g[:-1] * g[1:] < 0):

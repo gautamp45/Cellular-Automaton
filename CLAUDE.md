@@ -38,6 +38,7 @@ cellauto analyze {eca-atlas|lifelike-atlas|inference-study|nca-eval} [--quick] [
                                         # long analyses -> results/*.json (committed); then cellauto export-web
 ```
 Runtimes, the new-dataset recipe and the numbers to quote are in `docs/plan/STATUS.md`.
+CI runs numpy 2.2.x on Python 3.10/3.12 (the sandbox has newer numpy): also check `PYTHONPATH=/tmp/np22 python3 -m mypy src` after `pip install --target /tmp/np22 numpy==2.2.6` (HANDOFF §5).
 If `pytest` can't import `cellauto`, you're hitting the uv-tool shim in `/root/.local/bin`. Use `python3 -m pytest` (HANDOFF §3).
 
 ## Environment quick facts (cloud sandbox)

@@ -83,16 +83,18 @@ class NumpyNCA:
         """One update. With ``fire_rate == 1`` the RNG is not consumed (``rng`` may be None)."""
         c, h, w = x.shape
         fr = self.config.fire_rate if fire_rate is None else fire_rate
-        dx = (self.w2 @ self.hidden_activations(x)).reshape(c, h, w)
+        raw = (self.w2 @ self.hidden_activations(x)).reshape(c, h, w)
         if fr < 1.0:
             if rng is None:
                 raise ValueError("an rng is required when fire_rate < 1")
-            dx = dx * (rng.random((h, w)) <= fr)
-        new = x + dx
+            update = np.asarray(raw * (rng.random((h, w)) <= fr), dtype=np.float32)
+        else:
+            update = np.asarray(raw, dtype=np.float32)
+        new = x + update
         living = self.alive(x[ALPHA_CHANNEL]) & self.alive(new[ALPHA_CHANNEL])
         out = (new * living).astype(np.float32)
         if return_dx:
-            return out, dx.astype(np.float32)
+            return out, update.astype(np.float32)
         return out
 
     def run(

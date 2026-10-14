@@ -187,7 +187,7 @@ def analyse(
                         for j in range(chosen)])  # fmt: skip
     remap = np.empty(chosen, dtype=np.intp)
     remap[order] = np.arange(chosen)
-    labels = remap[labels]
+    labels[:] = remap[labels]
 
     row_of = {int(c) // 2: i for i, c in enumerate(codes)}
     in_catalog = np.zeros(n, dtype=np.uint8)

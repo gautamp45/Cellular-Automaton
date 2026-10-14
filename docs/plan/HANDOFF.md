@@ -66,6 +66,7 @@ This is for whoever (human or AI) continues this work in a new session with no m
 - **NCA `run()` vs the evaluator:** `NumpyNCA.run(damage_at=...)` yields the *damaged* state at the damage step; the evaluation protocol records MSE just before damage in its own loop (`nca/evaluate.run_one`). Don't swap them.
 - **Duality identity is torus-only:** `1 − step(g, r) == step(1 − g, dual(r))` is exact with `wrap`; a dead border is not inversion-symmetric.
 - **Float summation order:** batch-size-dependent mean reductions differ at ~1e-16, so compare with a tolerance, not equality (atlas batch test).
+- **CI uses an older numpy than the sandbox (2.2.x vs 2.5.x) and Python 3.10/3.12.** Newer-vs-older numpy stubs differ in array-shape typing, so mypy can fail in CI while passing locally (it did: 5 errors, all "variable re-assigned an array of a different shape"). Before pushing, check against CI's numpy: `pip install --target /tmp/np22 numpy==2.2.6 && PYTHONPATH=/tmp/np22 python3 -m mypy src` (and the tests). Avoid re-using a variable name for arrays of different shapes; use a new name or `np.asarray(..., dtype=...)`.
 - **ruff scans Markdown code blocks:** `docs/plan` is excluded in `pyproject.toml`; keep it excluded.
 
 ## 6. Kickoff prompts (copy-paste into a new session)

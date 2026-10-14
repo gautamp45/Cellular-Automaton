@@ -86,13 +86,15 @@ def kmeans(
         if best is None or inertia < best[0] - 1e-12:
             best = (inertia, labels.copy(), centres.copy())
     assert best is not None
-    inertia, labels, centres = best
-    sizes = np.bincount(labels, minlength=k)
-    first = np.array([np.flatnonzero(labels == j)[0] if sizes[j] else a.shape[0] for j in range(k)])
+    inertia, best_labels, best_centres = best
+    sizes = np.bincount(best_labels, minlength=k)
+    first = np.array(
+        [np.flatnonzero(best_labels == j)[0] if sizes[j] else a.shape[0] for j in range(k)]
+    )
     order = np.lexsort((first, -sizes))  # decreasing size, then first appearance
     remap = np.empty(k, dtype=np.intp)
     remap[order] = np.arange(k)
-    return remap[labels], centres[order], inertia
+    return remap[best_labels], best_centres[order], inertia
 
 
 def silhouette(x: npt.ArrayLike, labels: npt.ArrayLike, chunk: int = 1024) -> float:
