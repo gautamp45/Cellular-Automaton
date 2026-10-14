@@ -37,3 +37,10 @@ def lifelike_rule(rule_id: str) -> LifeRule:
         if entry["id"] == rule_id:
             return LifeRule.parse(entry["rulestring"])
     raise KeyError(f"unknown life-like rule id {rule_id!r}")
+
+
+def lenia_presets() -> list[dict[str, Any]]:
+    """Lenia presets (credit and licence are in the file's ``license`` field)."""
+    doc = json.loads(_read("lenia_presets.json"))
+    presets: list[dict[str, Any]] = doc["presets"]
+    return presets

@@ -10,7 +10,7 @@ Legend: ⬜ not started · 🟨 in progress / partial · ✅ done · ⏭️ skip
 | P01 | Scaffold, tooling, CI | Must | ✅ | see log | ruff `extend-exclude` uses `docs/plan` (not just `/reference`): ruff's formatter also formats the code blocks in the plan's `.md` files |
 | P02 | Elementary engine | Must | ✅ | see log | `OD_CA.py` removed |
 | P03 | Life-like engine, RLE, catalogs | Must | ✅ | see log | `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed |
-| P04 | Lenia | Should | ⬜ | | Needs a one-time download of `animals.json` (GitHub raw) |
+| P04 | Lenia | Should | ✅ | see log | `animals.json` downloaded once; the 3 presets are copied verbatim into `catalog/data/lenia_presets.json` |
 | P05 | NCA torch-free inference + manifest | Must | ⬜ | | |
 | P06 | Renderer + CLI | Must | ⬜ | | |
 | P07 | Contract, export, fixtures, ALGORITHMS.md | Must | ⬜ | | Frontend may start after this (zero-change after P12) |
@@ -36,6 +36,8 @@ If the owner hasn't answered, proceed with the defaults and note it in the sessi
 ## Session log (newest first)
 
 Add one entry per session: date, branch, phases touched, what's left mid-phase, surprises.
+
+- **P04 done.** `engines/lenia.py` (`LeniaParams`, `kernel`, cached `kernel_fft`, `growth`, `step`, `run`, `decode_lenia_rle`, `life_as_lenia`), `catalog/data/lenia_presets.json` (O2u, O2ui, O2b from Chakazul/Lenia, MIT, plus the `life_as_lenia` non-pattern preset), `catalog.lenia_presets()`. Verified values passed unchanged: Orbium 20×20, sum 76.863, mass in [69, 74] for t = 100..500 in 128², glider displacement > 20 cells between t=100 and 200, Life-as-Lenia equals B3/S23 on 20 random grids, median 128² step < 10 ms. **Interpretation notes for P07/ALGORITHMS.md:** (1) `step(A, params, kfft=None)` takes the FFT of the origin-shifted kernel (origin at index `(H//2, W//2)`); `life_as_lenia()` returns `(params, kernel3x3)` rather than an FFT, and `step(A, life_params)` builds the 3×3 box kernel itself (`kernel_core='life_box'`, added to `LeniaParams.kernel_core`). (2) `growth='life_step'` rounds `u` with `np.rint` before comparing, to absorb FFT round-off. (3) State is returned as float32; kernel/FFT math is float64. (4) `lenia_presets.json` is `{license, source, presets: [...]}` (a wrapper, so the MIT credit lives in the file); `life_as_lenia` stores `mu=0, sigma=1` as unused placeholders. **Next: P05.**
 
 - **P03 done** (two commits). `engines/lifelike.py` (LifeRule parse/code/table, batch-aware `neighbour_counts`, `step`, `step_batch`, `iterate`, `run`, `random_grid`), `catalog/{rle,patterns,rules}.py` + `catalog/data/{patterns,lifelike_rules,elementary_rules}.json` (12 patterns, 27 life-like rules, 18 reference ECA rules). Every verified pattern vector (periods, glider/LWSS shifts, R-pentomino 27/178, acorn 57, diehard 2→0, Gosper gun 36/41/46/51/56) passed unchanged; hypothesis checks `step` against a slow loop and all 2¹⁸ codes round-trip. Legacy `GameofLife.py`, `TD CA/`, `TD_Rule_Web Scraper.py` removed and dropped from ruff excludes; `CLAUDE.md` legacy list updated. Judgement call: catalog `description`/`tags` text for rules and patterns is my own wording (not in the phase file); `self-dual` is tagged only on `day_and_night` until P10 computes duality for all. **Next: P04.**
 
