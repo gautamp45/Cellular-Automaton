@@ -38,7 +38,8 @@ If `pytest` can't import `cellauto`, you're hitting the uv-tool shim in `/root/.
 
 ## Environment quick facts (cloud sandbox)
 
-- Torch **cannot** be installed here (`download.pytorch.org` is blocked, and the PyPI CUDA wheel won't import). Torch tests `importorskip` and run in CI. Training runs locally or on Colab/Kaggle.
+- `download.pytorch.org` is blocked, but torch **can** be installed from PyPI in an isolated directory (it drags in ~5 GB of NVIDIA wheels, ~25 min on the sandbox proxy, CPU-only use is fine):
+  `pip install --target /tmp/torchenv torch pyyaml tqdm` then `PYTHONPATH=/tmp/torchenv python3 -m pytest -q -m torch`. Without it, torch tests `importorskip` and run in CI. Long training runs belong on a laptop or Colab/Kaggle.
 - PyPI and `raw.githubusercontent.com` are reachable.
 - GitHub operations go through the MCP GitHub tools, not `gh`.
 

@@ -24,9 +24,7 @@ packages = ["src/cellauto"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-extend-exclude = ["experiments", "web", "docs/plan",
-  # legacy, removed phase by phase:
-  "neural-cellular-automata"]
+extend-exclude = ["experiments", "web", "docs/plan"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "NPY", "SIM", "RUF"]

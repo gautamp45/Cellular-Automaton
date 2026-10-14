@@ -45,3 +45,12 @@ def load_model(model_id: str, root: str | Path | None = None) -> NumpyNCA:
             )
             return NumpyNCA.from_npz(base / entry["weights"], config)
     raise KeyError(f"unknown NCA model id {model_id!r}")
+
+
+def upsert_manifest_entry(manifest_path: str | Path, entry: dict[str, Any]) -> None:
+    """Add ``entry`` to the manifest, replacing any entry with the same id; keeps it sorted."""
+    path = Path(manifest_path)
+    entries: list[dict[str, Any]] = json.loads(path.read_text(encoding="utf-8"))
+    entries = [e for e in entries if e["id"] != entry["id"]] + [entry]
+    entries.sort(key=lambda e: e["id"])
+    path.write_text(json.dumps(entries, indent=2) + "\n", encoding="utf-8")

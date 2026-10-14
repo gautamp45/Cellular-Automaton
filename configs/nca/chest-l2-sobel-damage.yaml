@@ -1,0 +1,19 @@
+# Mirrors the 2023 training of models/nca/chest-l2-sobel-damage (that run was unseeded, so a
+# retrain with seed 0 reproduces the recipe, not the exact weights).
+# Run from the repository root:  cellauto nca train --config configs/nca/chest-l2-sobel-damage.yaml
+id: chest-l2-sobel-damage
+target_path: assets/nca/targets/chest.png
+device: null          # null = auto (cuda -> mps -> cpu)
+iterations: 1000
+learning_rate: 0.002
+img_size: 28
+padding: 0
+n_channels: 16
+hidden_channels: 128
+batch_size: 8
+pool_size: 1024
+filter: sobel
+loss: l2
+damage: true
+fire_rate: 0.5
+seed: 0

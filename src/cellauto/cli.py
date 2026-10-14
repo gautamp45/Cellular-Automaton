@@ -102,8 +102,8 @@ def _cmd_lenia(a: argparse.Namespace) -> int:
 
 
 def _cmd_nca_run(a: argparse.Namespace) -> int:
+    from cellauto.nca.animate import growth_gif
     from cellauto.nca.checkpoints import load_manifest, load_model
-    from cellauto.nca.image import make_seed, rgba_to_rgb
 
     entry = next((m for m in load_manifest() if m["id"] == a.model), None)
     if entry is None:
@@ -113,12 +113,27 @@ def _cmd_nca_run(a: argparse.Namespace) -> int:
     if not 0.0 < fire <= 1.0:
         raise CliError("--fire-rate must be in (0, 1]")
     model = type(model)(model.w1, model.b1, model.w2, replace(model.config, fire_rate=fire))
-    rng, damage_rng = (np.random.default_rng(s) for s in np.random.SeedSequence(a.seed).spawn(2))
-    seed_state = make_seed(entry["grid_size"], entry["n_channels"], entry["padding"])
-    states = [seed_state, *model.run(seed_state, a.steps, rng, a.damage_at or (), damage_rng)]
-    frames = (render.rgb_to_image(rgba_to_rgb(s), a.scale) for s in states)
-    render.save_gif(frames, a.out, a.fps)
-    print(f"wrote {a.out} ({a.model}, {a.steps + 1} frames)")
+    n = growth_gif(
+        model, a.out, grid_size=entry["grid_size"], padding=entry["padding"], steps=a.steps,
+        seed=a.seed, damage_at=a.damage_at or (), scale=a.scale, fps=a.fps,
+    )  # fmt: skip
+    print(f"wrote {a.out} ({a.model}, {n} frames)")
+    return 0
+
+
+def _cmd_nca_train(a: argparse.Namespace) -> int:
+    try:
+        import yaml
+
+        from cellauto.nca.training.train import train
+    except ImportError:
+        raise CliError('training needs PyTorch and PyYAML: pip install -e ".[train]"') from None
+    with open(a.config, encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+    if not isinstance(config, dict):
+        raise CliError(f"{a.config} must contain a mapping")
+    path = train(config)
+    print(f"saved {path}")
     return 0
 
 
@@ -224,6 +239,9 @@ def build_parser() -> argparse.ArgumentParser:
     nr.add_argument("--fps", type=int, default=20)
     nr.add_argument("--scale", type=int, default=8)
     nr.add_argument("--out", required=True)
+    nt = nsub.add_parser("train", help="train an NCA from a YAML config (needs the [train] extra)")
+    nt.set_defaults(func=_cmd_nca_train)
+    nt.add_argument("--config", required=True, help="YAML config; paths are relative to the CWD")
 
     ex = add("export-web", "write (or --check) the static data backend", _cmd_export_web)
     ex.add_argument("--out", default=None, help="output dir (default: <repo>/web/public/data)")

@@ -175,6 +175,7 @@ def _nca(b: _Builder) -> None:
     seen_targets: set[str] = set()
     for m in load_manifest(root):
         mid = m["id"]
+        has_gif = bool(m.get("animation")) and (root / m["animation"]).is_file()
         models.append(
             {
                 "id": mid,
@@ -190,7 +191,7 @@ def _nca(b: _Builder) -> None:
                 "padding": m["padding"],
                 "weights_path": f"nca/weights/{mid}.json",
                 "target_path": f"nca/targets/{m['target']}.png",
-                "animation_path": f"nca/animations/{mid}.gif",
+                "animation_path": f"nca/animations/{mid}.gif" if has_gif else None,
             }
         )
         with np.load(root / m["weights"]) as z:
@@ -216,11 +217,12 @@ def _nca(b: _Builder) -> None:
             f"nca/weights/{mid}.json", f"nca_weights/{mid}", "nca_weights", weights,
             f"NCA weights: {mid}", "Float32 weights and scaled perception kernels (base64).",
         )  # fmt: skip
-        b.add_file(
-            f"nca/animations/{mid}.gif", f"nca_animation/{mid}",
-            (root / m["animation"]).read_bytes(),
-            f"NCA growth animation: {mid}", "GIF of the model growing from a seed.",
-        )  # fmt: skip
+        if has_gif:
+            b.add_file(
+                f"nca/animations/{mid}.gif", f"nca_animation/{mid}",
+                (root / m["animation"]).read_bytes(),
+                f"NCA growth animation: {mid}", "GIF of the model growing from a seed.",
+            )  # fmt: skip
         if m["target"] not in seen_targets:
             seen_targets.add(m["target"])
             b.add_file(
