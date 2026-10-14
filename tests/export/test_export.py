@@ -78,9 +78,9 @@ def test_every_json_validates_against_its_model(files: dict[str, bytes]) -> None
             NcaWeights.model_validate_json(data)
         elif path.startswith("fixtures/"):
             Fixture.model_validate_json(data)
-    assert set(SCHEMA_OF.values()) | {"nca_weights", "fixture", "binary_table_header"} == set(
-        TOP_LEVEL
-    )
+    assert set(SCHEMA_OF.values()) | {
+        "nca_weights", "fixture", "binary_table_header", "nca_evaluation",
+    } == set(TOP_LEVEL)  # fmt: skip
 
 
 def test_catalog_contents(files: dict[str, bytes]) -> None:
@@ -104,7 +104,14 @@ def test_catalog_contents(files: dict[str, bytes]) -> None:
     assert pats["pulsar"]["width"] == pats["pulsar"]["height"] == 13
     assert len(pats["glider"]["cells"]) == 5
     models = json.loads(files["nca/models.json"])
-    assert len(models) == 25 and all(m["metrics"] is None for m in models)
+    assert len(models) == 25 and all(m["metrics"]["n_seeds"] == 30 for m in models)
+    by_id = {m["id"]: m["metrics"] for m in models}
+    assert by_id["chest-l2-laplacian"]["regen_steps"] is None
+    assert (
+        by_id["chest-l2-sobel"]["mse_200"]["mean"]
+        < 0.005
+        < by_id["chest-l2-gaussian"]["mse_200"]["mean"]
+    )
     assert {m["id"]: m["isotropic"] for m in models}["chest-l2-gaussian"] is True
 
 
@@ -230,6 +237,27 @@ def test_inference_study_dataset(files: dict[str, bytes]) -> None:
         d for d in json.loads(files["index.json"])["datasets"] if d["id"] == "inference_study"
     )
     assert ref["produced_by"] == "cellauto analyze inference-study"
+
+
+def test_nca_evaluation_dataset(files: dict[str, bytes]) -> None:
+    ev = json.loads(files["nca/evaluation.json"])
+    src = json.loads((ROOT / "results" / "nca_eval.json").read_text())["evaluation"]
+    assert ev == src and "inference stochasticity only" in ev["caveat"]
+    assert len(ev["models"]) == 25 and ev["protocol"]["seeds"] == 30
+    assert {c["family"] for c in ev["comparisons"]} == {"filter", "loss", "damage_training"}
+    damage = [c for c in ev["comparisons"] if c["family"] == "damage_training"]
+    assert {c["metric"] for c in damage} == {"regen_steps", "peak_after_damage"}
+    assert all(c["mean_diff"] < 0 and c["p_holm"] < 0.01 for c in damage)
+    models = {m["id"]: m for m in ev["models"]}
+    assert (
+        models["chest-l2-sobel-damage"]["regen_steps"]["mean"]
+        < models["chest-l2-sobel"]["regen_steps"]["mean"]
+    )
+    assert (
+        models["chest-l2-sobel"]["robustness"]
+        and models["chest-l2-laplacian"]["robustness"] is None
+    )
+    assert len(models["chest-l2-sobel"]["curve"]["steps"]) == 100
 
 
 def test_relu_examples(files: dict[str, bytes]) -> None:

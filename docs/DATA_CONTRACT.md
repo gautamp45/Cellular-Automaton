@@ -32,6 +32,7 @@ size (`DatasetRef`); use it for discovery and cache-busting.
 | `lifelike_atlas_header` / `lifelike_atlas_bin` | `lifelike/atlas.header.json`, `lifelike/atlas.bin` | `binary_table_header` | the rule-space atlas: all 131,072 B0-free rules × 11 columns in the cabin format below; **row `i` is the rule with code `2·i`** |
 | `lifelike_atlas_meta` | `lifelike/atlas_summary.json` | `lifelike_atlas_meta` | atlas protocol, PCA components, cluster summaries, the 20-bin edge-of-chaos table, Spearman correlations, and the catalog rules' row indices |
 | `relu_examples` | `inference/relu_examples.json` | `relu_examples` | every catalog rule compiled to an exact ReLU network, plus the histogram of hidden units over all 2^18 rules |
+| `nca_evaluation` | `nca/evaluation.json` | `nca_evaluation` | multi-seed evaluation of all 25 models (bootstrap 95% CIs, regeneration, fire-rate robustness, 100-point MSE curves) and paired comparisons with permutation and Holm-adjusted p-values (`produced_by`: `cellauto analyze nca-eval`); also fills `NcaModel.metrics` in `nca/models.json` |
 | `inference_study` | `inference/study.json` | `inference_study` | gradient descent vs exhaustive search: success rate (Wilson 95% CIs), bit error rate and wall-clock versus rollout length `k` and output noise `eps` (`produced_by`: `cellauto analyze inference-study`) |
 | `lifelike_patterns` | `lifelike/patterns.json` | `lifelike_patterns` | named patterns: RLE, size, live cells |
 | `lenia_presets` | `lenia/presets.json` | `lenia_presets` | Lenia presets (Orbium family, Life as a Lenia) |
@@ -109,7 +110,7 @@ the dataset plus a `meta` block with runtime, versions and machine, which is **n
 it is not deterministic). `cellauto export-web` copies the dataset part into `web/public/data/` and
 skips it if the results file does not exist, so a missing analysis only removes its page, never breaks
 the export. Currently: `eca_atlas` (`results/eca_atlas.json`), `inference_study`
-(`results/inference_study.json`) and the life-like atlas
+(`results/inference_study.json`), `nca_evaluation` (`results/nca_eval.json`) and the life-like atlas
 (`results/lifelike_atlas/{atlas.header.json,atlas.bin,summary.json}`, whose `mean_field` block also
 fills `LifeLikeRule.mean_field`). The atlas columns are `density`, `density_std`, `activity`, `damage`,
 `compression`, `lambda`, `mf_rho`, `pca_x`, `pca_y` (quantised uint16, see each column's `scale`/`zero`)

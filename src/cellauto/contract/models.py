@@ -477,3 +477,67 @@ class InferenceStudy(_Model):
     rules: list[InferenceRule]
     cells: list[InferenceCell]
     by_cluster: list[InferenceCluster]
+
+
+# --- NCA evaluation (P12) ----------------------------------------------------------------------
+
+
+class NcaEvalProtocol(_Model):
+    seeds: int
+    steps: int
+    damage_at: int
+    fire_rate: float
+    damage_seed_offset: int  # damage_rng = default_rng(offset + seed); fire_rng = default_rng(seed)
+    robustness_rates: list[float]
+    robustness_seeds: int
+    converged_threshold: float  # mean mse_200 at or below this counts as converged
+    regen_rule: str
+
+
+class NcaRobustnessPoint(_Model):
+    fire_rate: float
+    mse_200: Interval
+
+
+class NcaCurve(_Model):
+    steps: list[int]  # update counts t at which the curve is sampled
+    mean: list[float]
+    ci_low: list[float]
+    ci_high: list[float]
+
+
+class NcaModelEval(_Model):
+    id: str
+    n_seeds: int
+    converged: bool
+    mse_200: Interval
+    mse_1000: Interval  # MSE at the last step (equals step 1000 in the full protocol)
+    stability: Interval  # mse_1000 / mse_200; > 1 means drift
+    peak_after_damage: Interval
+    psnr_200: Interval
+    regen_steps: Interval | None  # None unless the model converged and recovered
+    regen_defined: int  # seeds for which recovery is defined (converged before damage)
+    regen_recovered: int  # of those, seeds that recovered within the horizon
+    robustness: list[NcaRobustnessPoint] | None
+    curve: NcaCurve
+
+
+class NcaComparison(_Model):
+    family: Literal["filter", "loss", "damage_training"]
+    target: str
+    a: str  # model id of the reference configuration
+    b: str  # model id it is compared with
+    metric: str
+    n_pairs: int
+    mean_diff: float  # mean over seeds of metric(b) - metric(a)
+    cohens_d: float | None
+    p_value: float  # paired sign-flip permutation test
+    p_holm: float  # Holm-adjusted within the family
+
+
+class NcaEvaluation(_Model):
+    format_version: Literal[1]
+    protocol: NcaEvalProtocol
+    models: list[NcaModelEval]
+    comparisons: list[NcaComparison]
+    caveat: str

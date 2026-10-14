@@ -297,8 +297,18 @@ def _lenia(b: _Builder) -> None:
     )  # fmt: skip
 
 
+def _nca_eval_results(root: Path) -> dict[str, Any] | None:
+    path = root / "results" / "nca_eval.json"
+    if not path.is_file():
+        return None
+    evaluation: dict[str, Any] = json.loads(path.read_text())["evaluation"]
+    return evaluation
+
+
 def _nca(b: _Builder) -> None:
     root = b.repo_root
+    evaluation = _nca_eval_results(root)
+    by_id = {m["id"]: m for m in evaluation["models"]} if evaluation else {}
     models = []
     seen_targets: set[str] = set()
     for m in load_manifest(root):
@@ -320,6 +330,16 @@ def _nca(b: _Builder) -> None:
                 "weights_path": f"nca/weights/{mid}.json",
                 "target_path": f"nca/targets/{m['target']}.png",
                 "animation_path": f"nca/animations/{mid}.gif" if has_gif else None,
+                "metrics": (
+                    {
+                        "mse_200": by_id[mid]["mse_200"],
+                        "mse_1000": by_id[mid]["mse_1000"],
+                        "regen_steps": by_id[mid]["regen_steps"],
+                        "n_seeds": by_id[mid]["n_seeds"],
+                    }
+                    if mid in by_id
+                    else None
+                ),
             }
         )
         with np.load(root / m["weights"]) as z:
@@ -361,6 +381,18 @@ def _nca(b: _Builder) -> None:
     b.add_json(
         "nca/models.json", "nca_models", "nca_models", models,
         "NCA models", "Trained neural CA checkpoints with their training configuration.",
+    )  # fmt: skip
+
+
+def _nca_evaluation(b: _Builder) -> None:
+    evaluation = _nca_eval_results(b.repo_root)
+    if evaluation is None:
+        return
+    b.add_json(
+        "nca/evaluation.json", "nca_evaluation", "nca_evaluation", evaluation,
+        "NCA evaluation",
+        "Multi-seed metrics with bootstrap CIs, paired comparisons and MSE curves per model.",
+        produced_by="cellauto analyze nca-eval",
     )  # fmt: skip
 
 
@@ -408,6 +440,7 @@ _BUILDERS: list[Callable[[_Builder], None]] = [
     _inference_study,
     _lenia,
     _nca,
+    _nca_evaluation,
     _fixtures,
     _content,
     _schemas,

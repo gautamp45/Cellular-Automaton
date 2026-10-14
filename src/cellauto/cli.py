@@ -188,6 +188,13 @@ def _cmd_analyze(a: argparse.Namespace) -> int:
         result = {"study": study, "meta": {**run_info(), "workers": a.workers, "quick": a.quick,
                   "runtime_s": round(time.perf_counter() - t0, 2)}}  # fmt: skip
         out = root / "results" / ("quick" if a.quick else "") / "inference_study.json"
+    elif a.what == "nca-eval":
+        from cellauto.nca.evaluate import DEFAULT, QUICK, QUICK_MODELS, run_evaluation
+
+        result = run_evaluation(
+            QUICK if a.quick else DEFAULT, QUICK_MODELS if a.quick else None, a.workers, root
+        )
+        out = root / "results" / ("quick" if a.quick else "") / "nca_eval.json"
     else:  # pragma: no cover - argparse restricts the choices
         raise CliError(f"unknown analysis {a.what!r}")
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -286,9 +293,12 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--check", action="store_true", help="exit 1 if the output is stale")
 
     an = add("analyze", "run an analysis and write results/*.json", _cmd_analyze)
-    an.add_argument("what", choices=["eca-atlas", "lifelike-atlas", "inference-study"])
+    an.add_argument("what", choices=["eca-atlas", "lifelike-atlas", "inference-study", "nca-eval"])
     an.add_argument(
-        "--workers", type=int, default=None, help="processes (lifelike-atlas, inference-study)"
+        "--workers",
+        type=int,
+        default=None,
+        help="processes (lifelike-atlas, inference-study, nca-eval)",
     )
     an.add_argument(
         "--quick", action="store_true", help="small protocol, written to results/quick/"
