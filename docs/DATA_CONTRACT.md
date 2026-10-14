@@ -28,14 +28,16 @@ size (`DatasetRef`); use it for discovery and cache-busting.
 | `engines` | `engines.json` | `engines` (list of `EngineSpec`) | parameter specs (name, kind, range, default, ref) that UI controls are generated from |
 | `elementary_rules` | `elementary/rules.json` | `elementary_rules` | all 256 rules: table, symmetry class, `lambda`, `surjective`, `reversible`; catalog names and Wolfram classes merged in |
 | `eca_atlas` | `elementary/atlas.json` | `eca_atlas` | behaviour features, PCA coordinates and clusters for all 256 rules, with the cluster-vs-Wolfram-class contingency table (`produced_by`: `cellauto analyze eca-atlas`) |
-| `lifelike_rules` | `lifelike/rules.json` | `lifelike_rules` | named B/S rules: rulestring, 18-bit code, `(2, 9)` table |
+| `lifelike_rules` | `lifelike/rules.json` | `lifelike_rules` | named B/S rules: rulestring, 18-bit code, `(2, 9)` table, `dual`, `self_dual`, `lambda`, and (once the atlas has been run) a `mean_field` block |
+| `lifelike_atlas_header` / `lifelike_atlas_bin` | `lifelike/atlas.header.json`, `lifelike/atlas.bin` | `binary_table_header` | the rule-space atlas: all 131,072 B0-free rules × 11 columns in the cabin format below; **row `i` is the rule with code `2·i`** |
+| `lifelike_atlas_meta` | `lifelike/atlas_summary.json` | `lifelike_atlas_meta` | atlas protocol, PCA components, cluster summaries, the 20-bin edge-of-chaos table, Spearman correlations, and the catalog rules' row indices |
 | `lifelike_patterns` | `lifelike/patterns.json` | `lifelike_patterns` | named patterns: RLE, size, live cells |
 | `lenia_presets` | `lenia/presets.json` | `lenia_presets` | Lenia presets (Orbium family, Life as a Lenia) |
 | `nca_models` | `nca/models.json` | `nca_models` | the 25 trained NCA checkpoints and their configuration |
 | `nca_weights/<id>` | `nca/weights/<id>.json` | `nca_weights` | scaled kernels + float32 weights (base64) |
 | `nca_target/<t>` | `nca/targets/<t>.png` | – | 28×28 RGBA target image |
 | `nca_animation/<id>` | `nca/animations/<id>.gif` | – | growth animation |
-| `fixture/<name>` | `fixtures/{elementary,elementary_math,lifelike,rle,lenia,nca}.json` | `fixture` | golden inputs/outputs (see [ALGORITHMS.md](ALGORITHMS.md)) |
+| `fixture/<name>` | `fixtures/{elementary,elementary_math,lifelike,lifelike_math,rle,lenia,nca}.json` | `fixture` | golden inputs/outputs (see [ALGORITHMS.md](ALGORITHMS.md)) |
 | `content_index` | `content/index.json` | `content_index` | explainer pages in display order |
 | `content/<slug>` | `content/<slug>.md` | – | Markdown with a `key: value` front-matter block (`title`, `page`, `order`) |
 | `schema/<name>` | `schema/<name>.schema.json` | – | generated JSON Schemas |
@@ -104,4 +106,8 @@ Some datasets are computed by `cellauto analyze …` into `results/*.json` (comm
 the dataset plus a `meta` block with runtime, versions and machine, which is **not** exported because
 it is not deterministic). `cellauto export-web` copies the dataset part into `web/public/data/` and
 skips it if the results file does not exist, so a missing analysis only removes its page, never breaks
-the export. Currently: `eca_atlas` (`results/eca_atlas.json`).
+the export. Currently: `eca_atlas` (`results/eca_atlas.json`) and the life-like atlas
+(`results/lifelike_atlas/{atlas.header.json,atlas.bin,summary.json}`, whose `mean_field` block also
+fills `LifeLikeRule.mean_field`). The atlas columns are `density`, `density_std`, `activity`, `damage`,
+`compression`, `lambda`, `mf_rho`, `pca_x`, `pca_y` (quantised uint16, see each column's `scale`/`zero`)
+and `cluster`, `is_catalog` (uint8).

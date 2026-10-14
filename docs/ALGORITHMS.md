@@ -12,7 +12,8 @@ explicit `initial` state; use any PRNG you like for live random starts.
 
 Sections: [ECA](#eca) · [Life-like](#lifelike) · [RLE](#rle) · [Rule code](#rule-code) ·
 [Lenia](#lenia) · [Neural CA](#nca) · [Transfer matrix](#transfer-matrix) · [Lucas](#lucas).
-Later phases append `#duality`, `#mean-field`, `#bayes-inference` and `#relu-compiler`.
+[Duality](#duality) · [Mean field](#mean-field). Later phases append `#bayes-inference` and
+`#relu-compiler`.
 
 ---
 
@@ -254,3 +255,50 @@ cells in row `t` is `2^popcount(t)` (Gould's sequence).
 
 On a ring of `N = 2^k` cells rule 90 is the linear map `S + S^-1` over GF(2) and
 `(S + S^-1)^(2^(k-1)) = 0`: every initial state dies. Use a prime or odd width for rule 90 experiments.
+
+---
+
+## Duality
+
+Fixture: `fixtures/lifelike_math.json` (`kind: "dual"`, one case per catalog rule).
+
+Inverting every cell (live ↔ dead) maps a life-like rule `(B, S)` to its **dual** `(B', S')`:
+
+```
+B' = { 8 − n : n ∉ S }          S' = { 8 − n : n ∉ B }
+```
+
+On a torus, `1 − step(grid, rule) == step(1 − grid, dual(rule))`. (With a dead border the identity fails
+because the outside is not inverted.) Duality is an involution; a rule is **self-dual** if `dual(rule) == rule`
+(Day & Night, `B3678/S34678`). Life's dual is `B0123478/S01234678`. There are exactly 512 self-dual rules
+(survival determines birth), hence `(2^18 + 2^9) / 2 = 131,328` equivalence classes (Burnside). The B0-free
+set is **not** closed under duality: `0 ∈ B'` iff `8 ∉ S`. In terms of the 18-bit [rule code](#rule-code), swap
+and invert the two 9-bit halves: `birth' = ~reverse(survival)`, `survival' = ~reverse(birth)`.
+
+**Langton's lambda** for a life-like rule is the probability that a uniformly random 3×3 neighbourhood
+maps to 1: `λ = (Σ_{n∈B} C(8,n) + Σ_{n∈S} C(8,n)) / 512`. Life 0.2734, HighLife 0.3281, Seeds 0.0547,
+Day & Night 0.5.
+
+## Mean field
+
+Fixture: `fixtures/lifelike_math.json` (`kind: "mean_field"`, tolerance 1e-9).
+
+If cells were independent with density `ρ`, a cell's live-neighbour count would be `Binomial(8, ρ)` and the
+next density would be
+
+```
+f(ρ) = ρ · Σ_{n∈S} C(8,n) ρⁿ (1−ρ)^(8−n)  +  (1−ρ) · Σ_{n∈B} C(8,n) ρⁿ (1−ρ)^(8−n)
+```
+
+**Fixed points** are the roots of `f(ρ) − ρ` on [0, 1]. Find sign changes of `g(ρ) = f(ρ) − ρ` on a
+20,001-point grid, refine each by 60 bisection steps, keep exact zeros on the grid (ρ = 0 is always a root for
+rules without B0; ρ = 1 is a root iff `8 ∈ S`), and merge roots closer than 1e-3. The derivative is a central
+difference with `h = 1e-6` (one-sided at 0 and 1). **Stability:** `|f'| < 1 − 1e-3` stable, `> 1 + 1e-3`
+unstable, otherwise **marginal** (near-degenerate roots such as Coral's, close to ρ = 1). Self-dual rules have a
+fixed-point set symmetric under `ρ → 1 − ρ`. Life: 0 (stable), 0.1925 (unstable), 0.3702 (stable).
+
+**Mean field versus reality.** The exported `mean_field` block of each catalog rule compares `f`'s attractor
+(iterating from ρ = 0.5) with the density of a simulation on a 127×127 torus (not a power of two: Replicator is
+linear over GF(2) and dies on 128²), random start at 0.5, 400 steps, mean density of the last 50 steps over
+3 seeds. `correlation_gap` is the absolute difference. Mean field works for gas-like rules (Seeds) and fails where
+spatial correlations dominate (Life's sparse ash, and the growing clusters of Coral and Diamoeba).

@@ -8,7 +8,15 @@ from typing import Any
 import numpy as np
 
 from cellauto.analysis import elementary as eca
-from cellauto.catalog import get_pattern, lenia_presets, parse_rle, patterns, place
+from cellauto.analysis import lifelike as lla
+from cellauto.catalog import (
+    get_pattern,
+    lenia_presets,
+    lifelike_rules,
+    parse_rle,
+    patterns,
+    place,
+)
 from cellauto.contract.models import Fixture
 from cellauto.engines import elementary, lenia, lifelike
 from cellauto.export.binary import to_tensor
@@ -199,11 +207,49 @@ def elementary_math_fixture() -> Fixture:
     )
 
 
+def lifelike_math_fixture() -> Fixture:
+    rules = [
+        r for r in lifelike_rules() if r["id"] in ("life", "highlife", "seeds", "day_and_night")
+    ]
+    cases: list[dict[str, Any]] = []
+    for r in lifelike_rules():
+        rule = lifelike.LifeRule.parse(r["rulestring"])
+        cases.append(
+            {
+                "kind": "dual",
+                "rule": rule.rulestring,
+                "dual": lla.dual(rule).rulestring,
+                "self_dual": lla.is_self_dual(rule),
+                "lambda": lla.lambda_(rule),
+            }
+        )
+    for r in rules:
+        rule = lifelike.LifeRule.parse(r["rulestring"])
+        cases.append(
+            {
+                "kind": "mean_field",
+                "rule": rule.rulestring,
+                "map": [{"rho": rho, "f": float(lla.mean_field_map(rho, rule))}
+                        for rho in (0.0, 0.1, 0.25, 0.5, 0.75, 1.0)],
+                "fixed_points": [{"rho": round(p.rho, 6), "stability": p.stability}
+                                 for p in lla.fixed_points(rule)],
+            }
+        )  # fmt: skip
+    return Fixture(
+        engine="lifelike_math",
+        description="Duality and Langton lambda for the catalog; the mean-field map f(rho) and "
+        "its fixed points (rounded to 6 decimals) for four rules.",
+        tolerance=1e-9,
+        cases=cases,
+    )
+
+
 def all_fixtures(repo_root: Path) -> dict[str, Fixture]:
     return {
         "elementary": elementary_fixture(),
         "elementary_math": elementary_math_fixture(),
         "lifelike": lifelike_fixture(),
+        "lifelike_math": lifelike_math_fixture(),
         "rle": rle_fixture(),
         "lenia": lenia_fixture(),
         "nca": nca_fixture(repo_root),

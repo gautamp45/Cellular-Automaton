@@ -19,6 +19,7 @@ import numpy as np
 
 from cellauto import __version__
 from cellauto.analysis import elementary as eca
+from cellauto.analysis import lifelike as lla
 from cellauto.catalog import elementary_rules, lenia_presets, lifelike_rules, parse_rle, patterns
 from cellauto.contract.models import DatasetRef, Index, NcaWeights
 from cellauto.contract.schema import adapter, dumps, json_schemas, schema_path
@@ -34,7 +35,9 @@ from cellauto.nca.spec import ALIVE_THRESHOLD, ALPHA_CHANNEL, is_isotropic, perc
 PRODUCED_BY = "cellauto export-web"
 # Float-heavy fixtures can differ in the last bits across numpy/BLAS builds, so `--check` compares
 # their tensors within the fixture's own tolerance instead of byte-for-byte.
-TOLERANT_PATHS = frozenset({"fixtures/lenia.json", "fixtures/nca.json"})
+TOLERANT_PATHS = frozenset(
+    {"fixtures/lenia.json", "fixtures/nca.json", "fixtures/lifelike_math.json"}
+)
 
 
 @dataclass
@@ -127,23 +130,39 @@ def _eca_atlas(b: _Builder) -> None:
 
 
 def _lifelike(b: _Builder) -> None:
+    results = b.repo_root / "results" / "lifelike_atlas" / "summary.json"
+    simulated = json.loads(results.read_text())["mean_field"] if results.is_file() else {}
     rules = []
     for r in lifelike_rules():
         parsed = LifeRule.parse(r["rulestring"])
-        rules.append(
-            {
-                "id": r["id"],
-                "name": r["name"],
-                "rulestring": parsed.rulestring,
-                "code": parsed.code,
-                "table": parsed.table().tolist(),
-                "description": r["description"],
-                "tags": r["tags"],
-            }
-        )
+        entry: dict[str, Any] = {
+            "id": r["id"],
+            "name": r["name"],
+            "rulestring": parsed.rulestring,
+            "code": parsed.code,
+            "table": parsed.table().tolist(),
+            "description": r["description"],
+            "tags": r["tags"],
+            "dual": lla.dual(parsed).rulestring,
+            "self_dual": lla.is_self_dual(parsed),
+            "lambda": lla.lambda_(parsed),
+        }
+        if r["id"] in simulated:
+            sim = simulated[r["id"]]
+            entry["mean_field"] = {
+                "fixed_points": [
+                    {"rho": round(fp.rho, 6), "derivative": round(fp.derivative, 6),
+                     "stability": fp.stability}
+                    for fp in lla.fixed_points(parsed)
+                ],
+                "simulated_density": sim["simulated_density"],
+                "correlation_gap": sim["correlation_gap"],
+            }  # fmt: skip
+        rules.append(entry)
     b.add_json(
         "lifelike/rules.json", "lifelike_rules", "lifelike_rules", rules,
-        "Life-like rules", "Named B/S rules with 18-bit codes and lookup tables.",
+        "Life-like rules", "Named B/S rules: 18-bit code, lookup table, dual rule, lambda and "
+        "mean-field analysis.",
     )  # fmt: skip
     pats = []
     for p in patterns():
@@ -166,6 +185,35 @@ def _lifelike(b: _Builder) -> None:
     b.add_json(
         "lifelike/patterns.json", "lifelike_patterns", "lifelike_patterns", pats,
         "Life patterns", "Named patterns as RLE plus decoded live cells.",
+    )  # fmt: skip
+
+
+def _lifelike_atlas(b: _Builder) -> None:
+    root = b.repo_root / "results" / "lifelike_atlas"
+    if not (root / "summary.json").is_file():
+        return
+    by = "cellauto analyze lifelike-atlas"
+    header = json.loads((root / "atlas.header.json").read_text())
+    b.add_json(
+        "lifelike/atlas.header.json", "lifelike_atlas_header", "binary_table_header", header,
+        "Rule-space atlas: table header", "Column layout of lifelike/atlas.bin (cabin format).",
+        produced_by=by,
+    )  # fmt: skip
+    b._put(
+        "lifelike/atlas.bin",
+        _Entry(
+            (root / "atlas.bin").read_bytes(),
+            "lifelike_atlas_bin",
+            "Rule-space atlas: table",
+            "131,072 B0-free life-like rules x 11 columns, little-endian columns (cabin format).",
+            by,
+        ),
+    )
+    b.add_json(
+        "lifelike/atlas_summary.json", "lifelike_atlas_meta", "lifelike_atlas_meta",
+        json.loads((root / "summary.json").read_text())["summary"],
+        "Rule-space atlas: summary", "Protocol, clusters, edge-of-chaos table and catalog rows.",
+        produced_by=by,
     )  # fmt: skip
 
 
@@ -301,6 +349,7 @@ _BUILDERS: list[Callable[[_Builder], None]] = [
     _elementary,
     _eca_atlas,
     _lifelike,
+    _lifelike_atlas,
     _lenia,
     _nca,
     _fixtures,
@@ -382,6 +431,8 @@ def _close(a: Any, b: Any, atol: float) -> bool:
         return a.keys() == b.keys() and all(_close(a[k], b[k], atol) for k in a)
     if isinstance(a, list) and isinstance(b, list):
         return len(a) == len(b) and all(_close(x, y, atol) for x, y in zip(a, b, strict=True))
+    if isinstance(a, float) and isinstance(b, float):
+        return abs(a - b) <= atol
     return bool(a == b)
 
 

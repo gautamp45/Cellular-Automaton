@@ -24,6 +24,7 @@ TOP_LEVEL: dict[str, Any] = {
     "content_index": list[m.ContentPage],
     "fixture": m.Fixture,
     "eca_atlas": m.EcaAtlas,
+    "lifelike_atlas_meta": m.LifelikeAtlasMeta,
 }
 
 

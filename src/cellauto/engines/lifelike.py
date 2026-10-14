@@ -12,6 +12,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 import numpy as np
+import numpy.typing as npt
 
 from cellauto._types import BinaryArray, Boundary
 from cellauto._validate import as_binary, check_boundary, check_int_range
@@ -85,27 +86,32 @@ def _as_rule(rule: LifeRule | str) -> LifeRule:
 def neighbour_counts(grid: BinaryArray, boundary: Boundary = "wrap") -> BinaryArray:
     """Moore-neighbourhood live counts (uint8) over the last two axes.
 
-    Works on a batch ``(..., H, W)``. ``wrap`` is a torus; ``dead`` treats outside as 0.
+    Works on a batch ``(..., H, W)``. ``wrap`` is a torus; ``dead`` treats outside as 0. Computed
+    separably: a 3-cell sum along rows, then along columns, minus the centre.
     """
     check_boundary(boundary)
     g = np.asarray(grid, dtype=np.uint8)
     if g.ndim < 2:
         raise ValueError("grid must have at least 2 dimensions")
-    counts = np.zeros(g.shape, dtype=np.uint8)
     if boundary == "wrap":
-        for dy in (-1, 0, 1):
-            for dx in (-1, 0, 1):
-                if dy or dx:
-                    counts += np.roll(g, (dy, dx), axis=(-2, -1))
+        row_sum = g + np.roll(g, 1, axis=-1) + np.roll(g, -1, axis=-1)
+        total = row_sum + np.roll(row_sum, 1, axis=-2) + np.roll(row_sum, -1, axis=-2)
     else:
-        pad = [(0, 0)] * (g.ndim - 2) + [(1, 1), (1, 1)]
-        p = np.pad(g, pad)
         h, w = g.shape[-2:]
-        for dy in range(3):
-            for dx in range(3):
-                if dy != 1 or dx != 1:
-                    counts += p[..., dy : dy + h, dx : dx + w]
-    return counts
+        p = np.pad(g, [(0, 0)] * (g.ndim - 2) + [(1, 1), (1, 1)])
+        row_sum = p[..., :, 0:w] + p[..., :, 1 : w + 1] + p[..., :, 2 : w + 2]
+        total = row_sum[..., 0:h, :] + row_sum[..., 1 : h + 1, :] + row_sum[..., 2 : h + 2, :]
+    return np.asarray(total - g, dtype=np.uint8)
+
+
+def tables_from_codes(codes: npt.ArrayLike) -> BinaryArray:
+    """``(R, 2, 9)`` lookup tables for an array of 18-bit rule codes."""
+    c = np.asarray(codes, dtype=np.int64).reshape(-1)
+    n = np.arange(9)
+    out = np.empty((c.shape[0], 2, 9), dtype=np.uint8)
+    out[:, 0, :] = (c[:, None] >> n) & 1
+    out[:, 1, :] = (c[:, None] >> (9 + n)) & 1
+    return out
 
 
 def step(grid: BinaryArray, rule: LifeRule | str, boundary: Boundary = "wrap") -> BinaryArray:
@@ -122,7 +128,10 @@ def step_batch(grids: BinaryArray, tables: BinaryArray, boundary: Boundary = "wr
     if t.shape != (g.shape[0], 2, 9):
         raise ValueError(f"tables must have shape ({g.shape[0]}, 2, 9), got {t.shape}")
     counts = neighbour_counts(g, boundary)
-    return t[np.arange(g.shape[0])[:, None, None], g, counts]
+    base = (np.arange(g.shape[0], dtype=np.int64) * 18)[:, None, None]
+    return np.asarray(
+        np.take(t.reshape(-1), base + g.astype(np.int64) * 9 + counts), dtype=np.uint8
+    )
 
 
 def iterate(

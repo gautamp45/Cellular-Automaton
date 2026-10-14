@@ -19,3 +19,4 @@ web/dist/
 
 # quick (CI-sized) analysis runs are not committed
 results/quick/
+results/lifelike_atlas/chunks/

@@ -169,6 +169,12 @@ def _cmd_analyze(a: argparse.Namespace) -> int:
 
         result = run_atlas(quick=a.quick)
         out = root / "results" / ("quick" if a.quick else "") / "eca_atlas.json"
+    elif a.what == "lifelike-atlas":
+        from cellauto.analysis.atlas import build_results
+
+        meta = build_results(root / "results", quick=a.quick, workers=a.workers)["meta"]
+        print(f"wrote results/{'quick/' if a.quick else ''}lifelike_atlas ({meta['runtime_s']} s)")
+        return 0
     else:  # pragma: no cover - argparse restricts the choices
         raise CliError(f"unknown analysis {a.what!r}")
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -267,7 +273,8 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--check", action="store_true", help="exit 1 if the output is stale")
 
     an = add("analyze", "run an analysis and write results/*.json", _cmd_analyze)
-    an.add_argument("what", choices=["eca-atlas"])
+    an.add_argument("what", choices=["eca-atlas", "lifelike-atlas"])
+    an.add_argument("--workers", type=int, default=None, help="processes for lifelike-atlas")
     an.add_argument(
         "--quick", action="store_true", help="small protocol, written to results/quick/"
     )

@@ -58,6 +58,7 @@ SCHEMA_OF = {
     "engines.json": "engines",
     "elementary/rules.json": "elementary_rules",
     "elementary/atlas.json": "eca_atlas",
+    "lifelike/atlas_summary.json": "lifelike_atlas_meta",
     "lifelike/rules.json": "lifelike_rules",
     "lifelike/patterns.json": "lifelike_patterns",
     "lenia/presets.json": "lenia_presets",
@@ -92,7 +93,11 @@ def test_catalog_contents(files: dict[str, bytes]) -> None:
     assert sum(r["surjective"] for r in rules) == 30
     life = next(r for r in json.loads(files["lifelike/rules.json"]) if r["id"] == "life")
     assert life["rulestring"] == "B3/S23" and life["code"] == 8 + 2048 + 4096
-    assert life["mean_field"] is None and life["dual"] is None
+    assert life["dual"] == "B0123478/S01234678" and life["self_dual"] is False
+    assert life["lambda"] == 140 / 512
+    mf = life["mean_field"]
+    assert [round(p["rho"], 4) for p in mf["fixed_points"]] == [0.0, 0.1925, 0.3702]
+    assert 0.03 < mf["simulated_density"] < 0.12 and mf["correlation_gap"] > 0.2
     pats = {p["id"]: p for p in json.loads(files["lifelike/patterns.json"])}
     assert pats["pulsar"]["width"] == pats["pulsar"]["height"] == 13
     assert len(pats["glider"]["cells"]) == 5

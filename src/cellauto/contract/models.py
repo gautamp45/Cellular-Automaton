@@ -326,3 +326,70 @@ class EcaAtlas(_Model):
     chosen_k: int
     clusterings: list[EcaClustering]  # chosen k, plus k = 4 when different
     rows: list[EcaAtlasRow]  # 256 rows, ordered by rule
+
+
+# --- life-like rule-space atlas (P10) ----------------------------------------------------------
+
+
+class LifeAtlasProtocol(_Model):
+    grid: int
+    steps: int
+    window_start: int
+    density: float
+    seed: int
+    n_rows: int  # 131072 for the complete atlas (all B0-free rules)
+    row_key: str
+
+
+class LifeAtlasCluster(_Model):
+    cluster: int
+    size: int
+    centroid: dict[str, float]  # mean of each simulated feature over the cluster
+
+
+class LifeAtlasKScore(_Model):
+    k: int
+    silhouette: float  # on a 10,000-row subsample
+
+
+class LifeAtlasBin(_Model):
+    """One quantile bin of lambda in the edge-of-chaos analysis."""
+
+    lambda_lo: float
+    lambda_hi: float
+    n: int
+    activity_median: float
+    activity_q1: float
+    activity_q3: float
+    damage_median: float
+    damage_q1: float
+    damage_q3: float
+    compression_median: float
+    compression_q1: float
+    compression_q3: float
+
+
+class LifeAtlasCorrelation(_Model):
+    feature: str
+    spearman_with_lambda: float
+
+
+class LifeAtlasCatalogRow(_Model):
+    id: str
+    code: int
+    row: int | None  # None for B0 rules, which are not in the atlas
+
+
+class LifelikeAtlasMeta(_Model):
+    format_version: Literal[1]
+    protocol: LifeAtlasProtocol
+    header_path: str  # the BinaryTableHeader describing atlas.bin
+    embedding_features: list[str]
+    embedding_components: list[list[float]]
+    explained_variance: list[float]
+    k_selection: list[LifeAtlasKScore]
+    chosen_k: int
+    clusters: list[LifeAtlasCluster]
+    edge_of_chaos: list[LifeAtlasBin]
+    correlations: list[LifeAtlasCorrelation]
+    catalog: list[LifeAtlasCatalogRow]
