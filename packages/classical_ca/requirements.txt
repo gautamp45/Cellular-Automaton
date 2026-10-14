@@ -1,7 +1,0 @@
-numpy
-pygame
-matplotlib
-pandas
-beautifulsoup4
-requests
-scikit-learn
